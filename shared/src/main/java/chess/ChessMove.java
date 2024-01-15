@@ -8,8 +8,11 @@ package chess;
  */
 public class ChessMove {
 
-    public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
-                     ChessPiece.PieceType promotionPiece) {
+    private final ChessPosition startPosition;
+    private final ChessPosition endPosition;
+    public ChessMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
     }
 
     /**
@@ -34,5 +37,10 @@ public class ChessMove {
      */
     public ChessPiece.PieceType getPromotionPiece() {
         throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{%d,%d} -> {%d,%d}", startPosition.getRow(), startPosition.getColumn(), endPosition.getRow(), endPosition.getColumn());
     }
 }

@@ -6,12 +6,13 @@ package chess;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
+public class ChessBoard {
 
-public class ChessBoard {}
-
+    private final ChessPiece[][] board = new ChessPiece[8][8];
     public ChessBoard() {
         
     }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -19,7 +20,9 @@ public class ChessBoard {}
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        throw new RuntimeException("Not implemented");
+        int row = position.getRow();
+        int col = position.getColumn();
+        board[position.getRow()][position.getColumn()] = piece;
     }
 
     /**
@@ -30,7 +33,7 @@ public class ChessBoard {}
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        throw new RuntimeException("Not implemented");
+        return this.board[position.getRow()][position.getColumn()];
     }
 
     /**
@@ -40,6 +43,4 @@ public class ChessBoard {}
     public void resetBoard() {
         throw new RuntimeException("Not implemented");
     }
-
-
 }

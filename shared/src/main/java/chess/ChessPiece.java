@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -9,12 +10,11 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
-
-    public static void main(String[] args) {
-        System.out.println("hello world")
-    }
-
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    private final ChessGame.TeamColor color;
+    private final PieceType type;
+    public ChessPiece(ChessGame.TeamColor color, ChessPiece.PieceType type) {
+        this.color = color;
+        this.type = type;
     }
 
     /**
@@ -50,7 +50,41 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
+        // Controller to decide which piece moves function to call.
+        if (this.type == PieceType.BISHOP)
+            return bishopMoves(board);
+        else if (this.type == PieceType.KNIGHT)
+            return knightMoves(board);
+        else if (this.type == PieceType.ROOK)
+            return rookMoves(board);
+        else if (this.type == PieceType.PAWN)
+            return pawnMoves(board);
+        else if (this.type == PieceType.QUEEN)
+            return queenMoves(board);
+        else if (this.type == PieceType.KING)
+            return kingMoves(board);
+        else return null;
     }
+
+    private Collection<ChessMove> bishopMoves(ChessBoard board) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> knightMoves(ChessBoard board) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> rookMoves(ChessBoard board) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> pawnMoves(ChessBoard board) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> queenMoves(ChessBoard board) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> kingMoves(ChessBoard board) {
+        return new ArrayList<>();
+    }
+
+
 }
