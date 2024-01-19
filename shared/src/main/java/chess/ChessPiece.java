@@ -131,7 +131,18 @@ public class ChessPiece {
         return moves;
     }
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition position) {
-        return new ArrayList<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col-1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col+1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row, col-1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row, col+1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col-1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col+1), moves);
+        return moves;
     }
     private boolean inBoard(ChessPosition pos) {
         return (1 <= pos.getRow() && pos.getRow() <= 8 &&
