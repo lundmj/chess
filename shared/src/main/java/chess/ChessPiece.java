@@ -119,13 +119,16 @@ public class ChessPiece {
             if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
                 break;
         }
+
         return moves;
     }
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition position) {
         return new ArrayList<>();
     }
-    private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition position) {
-        return new ArrayList<>();
+    private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition position) { // Literally just rook + bishop
+        ArrayList<ChessMove> moves = new ArrayList<>(rookMoves(board, position));
+        moves.addAll(bishopMoves(board, position));
+        return moves;
     }
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition position) {
         return new ArrayList<>();
