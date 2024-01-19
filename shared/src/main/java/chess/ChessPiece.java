@@ -92,7 +92,18 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition position) {
-        return new ArrayList<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+2, col-1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+2, col+1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-2, col-1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-2, col+1), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col+2), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col+2), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col-2), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col-2), moves);
+        return moves;
     }
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition position) {
         int row = position.getRow();
