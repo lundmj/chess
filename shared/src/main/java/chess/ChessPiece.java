@@ -119,7 +119,6 @@ public class ChessPiece {
             if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
                 break;
         }
-
         return moves;
     }
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition position) {
