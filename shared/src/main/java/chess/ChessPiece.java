@@ -33,7 +33,7 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return this.color;
     }
 
     /**
@@ -52,39 +52,71 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
         // Controller to decide which piece moves function to call.
-        if (this.type == PieceType.BISHOP)
-            return bishopMoves(board);
-        else if (this.type == PieceType.KNIGHT)
-            return knightMoves(board);
-        else if (this.type == PieceType.ROOK)
-            return rookMoves(board);
-        else if (this.type == PieceType.PAWN)
-            return pawnMoves(board);
-        else if (this.type == PieceType.QUEEN)
-            return queenMoves(board);
-        else if (this.type == PieceType.KING)
-            return kingMoves(board);
-        else return null;
+        return switch (this.type) {
+            case PieceType.BISHOP -> bishopMoves(board, position);
+            case PieceType.KNIGHT -> knightMoves(board, position);
+            case PieceType.ROOK -> rookMoves(board, position);
+            case PieceType.PAWN -> pawnMoves(board, position);
+            case PieceType.QUEEN -> queenMoves(board, position);
+            case PieceType.KING -> kingMoves(board, position);
+        };
     }
 
-    private Collection<ChessMove> bishopMoves(ChessBoard board) {
-        return new ArrayList<>();
-    }
-    private Collection<ChessMove> knightMoves(ChessBoard board) {
-        return new ArrayList<>();
-    }
-    private Collection<ChessMove> rookMoves(ChessBoard board) {
-        return new ArrayList<>();
-    }
-    private Collection<ChessMove> pawnMoves(ChessBoard board) {
-        return new ArrayList<>();
-    }
-    private Collection<ChessMove> queenMoves(ChessBoard board) {
-        return new ArrayList<>();
-    }
-    private Collection<ChessMove> kingMoves(ChessBoard board) {
-        return new ArrayList<>();
+    private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition position) {
+        int row = position.getRow();
+        int col = position.getColumn();
+        ArrayList<ChessMove> moves = new ArrayList<>();
+
+        for (int distance = 1; distance <= 7; distance++) { // up-right
+            ChessPosition checkPosition = new ChessPosition(row + distance, col + distance);
+            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+        }
+        for (int distance = 1; distance <= 7; distance++) { // down-right
+            ChessPosition checkPosition = new ChessPosition(row - distance, col + distance);
+            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+        }
+        for (int distance = 1; distance <= 7; distance++) { // down-left
+            ChessPosition checkPosition = new ChessPosition(row - distance, col - distance);
+            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+        }
+        for (int distance = 1; distance <= 7; distance++) { // up-left
+            ChessPosition checkPosition = new ChessPosition(row + distance, col - distance);
+            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+        }
+
+        return moves;
     }
 
-
+    private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition position) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition position) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition position) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition position) {
+        return new ArrayList<>();
+    }
+    private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition position) {
+        return new ArrayList<>();
+    }
+    private boolean inBoard(ChessPosition pos) {
+        return (1 <= pos.getRow() && pos.getRow() <= 8 &&
+                1 <= pos.getColumn() && pos.getColumn() <= 8);
+    }
+    private boolean checkIfClearAndAddPosition(ChessBoard board, ChessPosition position, ChessPosition checkPosition, ArrayList<ChessMove> moves) {
+        // Returns true if the space is clear
+        if (!inBoard(checkPosition))
+            return false;
+        if (board.getPiece(checkPosition) == null) {
+            moves.add(new ChessMove(position, checkPosition, null));
+            return true;
+        }
+        if (board.getPiece(checkPosition).getTeamColor() != this.color) {
+            moves.add(new ChessMove(position, checkPosition, null));
+        }
+        return false;
+    }
 }
