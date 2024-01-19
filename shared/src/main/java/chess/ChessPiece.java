@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import chess.ChessGame.TeamColor;
 
 /**
  * Represents a single chess piece
@@ -12,9 +13,11 @@ import java.util.Collection;
 public class ChessPiece {
     private final ChessGame.TeamColor color;
     private final PieceType type;
+    private boolean moved;
     public ChessPiece(ChessGame.TeamColor color, ChessPiece.PieceType type) {
         this.color = color;
         this.type = type;
+        this.moved = false;
     }
 
     /**
@@ -95,14 +98,14 @@ public class ChessPiece {
         int row = position.getRow();
         int col = position.getColumn();
         ArrayList<ChessMove> moves = new ArrayList<>();
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+2, col-1), moves);
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+2, col+1), moves);
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-2, col-1), moves);
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-2, col+1), moves);
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col+2), moves);
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col+2), moves);
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col-2), moves);
-        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col-2), moves);
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+2, col+1), moves); // 1:00
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col+2), moves); // 2:00
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col+2), moves); // 4:00
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-2, col+1), moves); // 5:00
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-2, col-1), moves); // 7:00
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row-1, col-2), moves); // 8:00
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+1, col-2), moves); // 10:00
+        checkIfBlockedAndAddPosition(board, position, new ChessPosition(row+2, col-1), moves); // 11:00
         return moves;
     }
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition position) {
@@ -134,7 +137,28 @@ public class ChessPiece {
         return moves;
     }
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition position) {
-        return new ArrayList<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int rowStep = (getTeamColor() == TeamColor.WHITE) ? 1 : -1;
+
+
+        ChessPosition advance = new ChessPosition(row+rowStep, col);
+        ChessPosition advance_left = new ChessPosition(row+rowStep, col-1);
+        ChessPosition advance_right = new ChessPosition(row+rowStep, col+1);
+        if (inBoard(advance) && board.getPiece(advance) == null) {
+            moves.add(new ChessMove(position, advance, null)); // TODO: MUST ADD PROMOTION
+        }
+        if (inBoard(advance_left) && board.getPiece(advance_left) != null
+                && board.getPiece(advance_left).getTeamColor() != getTeamColor()) {
+            moves.add(new ChessMove(position, advance_left, null)); // TODO: MUST ADD PROMOTION
+        }
+        if (inBoard(advance_right) && board.getPiece(advance_right) != null
+                && board.getPiece(advance_right).getTeamColor() != getTeamColor()) {
+            moves.add(new ChessMove(position, advance, null)); // TODO: MUST ADD PROMOTION
+        }
+
+        return moves;
     }
     private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition position) { // Literally just rook + bishop
         ArrayList<ChessMove> moves = new ArrayList<>(rookMoves(board, position));
