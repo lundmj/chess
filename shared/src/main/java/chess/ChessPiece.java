@@ -69,19 +69,23 @@ public class ChessPiece {
 
         for (int distance = 1; distance <= 7; distance++) { // up-right
             ChessPosition checkPosition = new ChessPosition(row + distance, col + distance);
-            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
         }
         for (int distance = 1; distance <= 7; distance++) { // down-right
             ChessPosition checkPosition = new ChessPosition(row - distance, col + distance);
-            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
         }
         for (int distance = 1; distance <= 7; distance++) { // down-left
             ChessPosition checkPosition = new ChessPosition(row - distance, col - distance);
-            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
         }
         for (int distance = 1; distance <= 7; distance++) { // up-left
             ChessPosition checkPosition = new ChessPosition(row + distance, col - distance);
-            if (!checkIfClearAndAddPosition(board, position, checkPosition, moves)) break;
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
         }
 
         return moves;
@@ -91,7 +95,32 @@ public class ChessPiece {
         return new ArrayList<>();
     }
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition position) {
-        return new ArrayList<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        ArrayList<ChessMove> moves = new ArrayList<>();
+
+        for (int distance = 1; distance <= 7; distance++) { // up
+            ChessPosition checkPosition = new ChessPosition(row + distance, col);
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
+        }
+        for (int distance = 1; distance <= 7; distance++) { // right
+            ChessPosition checkPosition = new ChessPosition(row, col + distance);
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
+        }
+        for (int distance = 1; distance <= 7; distance++) { // down
+            ChessPosition checkPosition = new ChessPosition(row - distance, col);
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
+        }
+        for (int distance = 1; distance <= 7; distance++) { // left
+            ChessPosition checkPosition = new ChessPosition(row, col - distance);
+            if (checkIfBlockedAndAddPosition(board, position, checkPosition, moves))
+                break;
+        }
+
+        return moves;
     }
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition position) {
         return new ArrayList<>();
@@ -106,17 +135,17 @@ public class ChessPiece {
         return (1 <= pos.getRow() && pos.getRow() <= 8 &&
                 1 <= pos.getColumn() && pos.getColumn() <= 8);
     }
-    private boolean checkIfClearAndAddPosition(ChessBoard board, ChessPosition position, ChessPosition checkPosition, ArrayList<ChessMove> moves) {
+    private boolean checkIfBlockedAndAddPosition(ChessBoard board, ChessPosition position, ChessPosition checkPosition, ArrayList<ChessMove> moves) {
         // Returns true if the space is clear
         if (!inBoard(checkPosition))
-            return false;
+            return true;
         if (board.getPiece(checkPosition) == null) {
             moves.add(new ChessMove(position, checkPosition, null));
-            return true;
+            return false;
         }
         if (board.getPiece(checkPosition).getTeamColor() != this.color) {
             moves.add(new ChessMove(position, checkPosition, null));
         }
-        return false;
+        return true;
     }
 }
