@@ -3,6 +3,8 @@ package chess;
 import java.security.interfaces.RSAKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
+
 import chess.ChessGame.TeamColor;
 
 /**
@@ -31,18 +33,42 @@ public class ChessPiece {
         PAWN
     }
 
+    public String getSymbol() {
+        return switch (getPieceType()){
+            case PieceType.BISHOP -> "B";
+            case PieceType.KNIGHT -> "N";
+            case PieceType.ROOK -> "R";
+            case PieceType.PAWN -> "P";
+            case PieceType.QUEEN -> "Q";
+            case PieceType.KING -> "K";
+        };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece that = (ChessPiece) o;
+        return color == that.color && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(color, type);
+    }
+
     /**
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        return this.color;
+        return color;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        return type;
     }
 
     /**
