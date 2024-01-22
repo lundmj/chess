@@ -1,5 +1,6 @@
 package chess;
 
+import java.security.interfaces.RSAKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import chess.ChessGame.TeamColor;
@@ -13,11 +14,9 @@ import chess.ChessGame.TeamColor;
 public class ChessPiece {
     private final ChessGame.TeamColor color;
     private final PieceType type;
-    private boolean moved;
     public ChessPiece(ChessGame.TeamColor color, ChessPiece.PieceType type) {
         this.color = color;
         this.type = type;
-        this.moved = false;
     }
 
     /**
@@ -140,25 +139,44 @@ public class ChessPiece {
         int row = position.getRow();
         int col = position.getColumn();
         ArrayList<ChessMove> moves = new ArrayList<>();
-        int rowStep = (getTeamColor() == TeamColor.WHITE) ? 1 : -1;
-
+        boolean isWhite = getTeamColor() == TeamColor.WHITE;
+        int rowStep = (isWhite) ? 1 : -1; // to decide if the piece moves up or down
+        int rowForDoubleMove = (isWhite) ? 2 : 7; // which row does a pawn need to be on to be able to double advance
+        int rowForPromotion = (isWhite) ? 8 : 1;
 
         ChessPosition advance = new ChessPosition(row+rowStep, col);
         ChessPosition advance_left = new ChessPosition(row+rowStep, col-1);
         ChessPosition advance_right = new ChessPosition(row+rowStep, col+1);
         if (inBoard(advance) && board.getPiece(advance) == null) {
-            moves.add(new ChessMove(position, advance, null)); // TODO: MUST ADD PROMOTION
+            doPawnMove(moves, position, advance, rowForPromotion); // TODO: MUST ADD PROMOTION
         }
         if (inBoard(advance_left) && board.getPiece(advance_left) != null
                 && board.getPiece(advance_left).getTeamColor() != getTeamColor()) {
-            moves.add(new ChessMove(position, advance_left, null)); // TODO: MUST ADD PROMOTION
+            doPawnMove(moves, position, advance_left, rowForPromotion); // TODO: MUST ADD PROMOTION
         }
         if (inBoard(advance_right) && board.getPiece(advance_right) != null
                 && board.getPiece(advance_right).getTeamColor() != getTeamColor()) {
-            moves.add(new ChessMove(position, advance, null)); // TODO: MUST ADD PROMOTION
+            doPawnMove(moves, position, advance_right, rowForPromotion); // TODO: MUST ADD PROMOTION
+        }
+
+        if (position.getRow() == rowForDoubleMove) {
+            ChessPosition doubleAdvance = new ChessPosition(row+(2*rowStep), col);
+            if (board.getPiece(advance) == null && board.getPiece(doubleAdvance) == null) {
+                doPawnMove(moves, position, doubleAdvance, rowForPromotion);
+            }
         }
 
         return moves;
+    }
+    private void doPawnMove(ArrayList<ChessMove> moves, ChessPosition position, ChessPosition dest, int rowForPromotion) {
+        if (dest.getRow() != rowForPromotion) {
+            moves.add(new ChessMove(position, dest, null));
+        } else {
+            moves.add(new ChessMove(position, dest, PieceType.QUEEN));
+            moves.add(new ChessMove(position, dest, PieceType.ROOK));
+            moves.add(new ChessMove(position, dest, PieceType.BISHOP));
+            moves.add(new ChessMove(position, dest, PieceType.KNIGHT));
+        }
     }
     private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition position) { // Literally just rook + bishop
         ArrayList<ChessMove> moves = new ArrayList<>(rookMoves(board, position));
