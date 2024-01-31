@@ -70,18 +70,18 @@ public class ChessBoard {
         }
     }
     public String toString() {
-        String output = "";
+        StringBuilder output = new StringBuilder();
         for (ChessPiece[] row : board) {
             for (ChessPiece piece : row) {
                 if (piece == null) {
-                    output += "| ";
+                    output.append("| ");
                 } else {
-                    output += String.format("|%s", piece.getSymbol());
+                    output.append(String.format("|%s", piece.getSymbol()));
                 }
             }
-            output += "|\n";
+            output.append("|\n");
         }
-        return output;
+        return output.toString();
     }
     @Override
     public boolean equals(Object o) {
