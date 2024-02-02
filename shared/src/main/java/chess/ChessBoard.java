@@ -11,10 +11,7 @@ import java.util.Arrays;
 public class ChessBoard {
 
     private final ChessPiece[][] board = new ChessPiece[8][8];
-    private PieceIterator iterator;
-    public ChessBoard() {
-        iterator = new PieceIterator();
-    }
+    private PieceIterator iterator = new PieceIterator();
 
     /**
      * Adds a chess piece to the chessboard
@@ -101,13 +98,13 @@ public class ChessBoard {
     private class PieceIterator { // Allows you go quickly iterate through all the pieces in the board
         private int row;
         private int col;
-        private ChessPiece piece;
+
         public PieceIterator() {
             row = 1; // start first row
             col = 0; // start off the board
-            piece = nextPiece();
         }
         public ChessPiece nextPiece() { // returns null if board is empty, or the next piece in the board
+            ChessPiece piece;
             do {
                 if (col == 8 && row == 8) {
                     return null;
@@ -122,6 +119,11 @@ public class ChessBoard {
             } while (piece == null);
 
             return piece;
+        }
+
+        public void reset() {
+            row = 1;
+            col = 0;
         }
     }
 }
