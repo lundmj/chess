@@ -95,4 +95,29 @@ public class ChessBoard {
     public int hashCode() {
         return Arrays.deepHashCode(board);
     }
+
+    private class PieceIterator { // Allows you go quickly iterate through all the pieces in the board
+        private int row;
+        private int col;
+        private ChessPiece piece;
+        PieceIterator() {
+            row = 1;
+            col = 1;
+            piece = getPiece(new ChessPosition(row, col));
+            while (piece == null) {
+                if (col == 8 && row == 8) // reached end of board, no pieces found. piece will remain null
+                    break;
+                if (col <= 8) {
+                    col++;
+                } else {
+                    col = 1;
+                    row++;
+                }
+                piece = getPiece(new ChessPosition(row, col));
+            }
+        }
+        public ChessPiece nextPiece() {
+            while (true)
+        }
+    }
 }

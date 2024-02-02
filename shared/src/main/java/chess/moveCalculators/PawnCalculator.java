@@ -18,24 +18,24 @@ public class PawnCalculator extends MoveCalculator {
         ChessPosition left = new ChessPosition(row+rowStep, col-1);
         ChessPosition right = new ChessPosition(row+rowStep, col+1);
         if (inBoard(left) && board.getPiece(left) != null && board.getPiece(left).getTeamColor() != color) {
-            addMove(board, position, left, moves, promotionRow);
+            addMove(position, left, moves, promotionRow);
         }
         if (inBoard(right) && board.getPiece(right) != null && board.getPiece(right).getTeamColor() != color) {
-            addMove(board, position, right, moves, promotionRow);
+            addMove(position, right, moves, promotionRow);
         }
 
         ChessPosition adv = new ChessPosition(row+rowStep, col);
         if (inBoard(adv) && board.getPiece(adv) == null) {
-            addMove(board, position, adv, moves, promotionRow);
+            addMove(position, adv, moves, promotionRow);
 
             ChessPosition doubleAdv = new ChessPosition(row+rowStep+rowStep, col);
             if (position.getRow() == startRow && board.getPiece(doubleAdv) == null) {
-                addMove(board, position, doubleAdv, moves, promotionRow);
+                addMove(position, doubleAdv, moves, promotionRow);
             }
         }
         return moves;
     }
-    private static void addMove(ChessBoard board, ChessPosition start, ChessPosition dest, ArrayList<ChessMove> moves, int promotionRow) {
+    private static void addMove(ChessPosition start, ChessPosition dest, ArrayList<ChessMove> moves, int promotionRow) {
         if (dest.getRow() != promotionRow) {
             moves.add(new ChessMove(start, dest, null));
         } else {
