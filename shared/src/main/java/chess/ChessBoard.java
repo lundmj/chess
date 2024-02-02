@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -11,7 +12,9 @@ import java.util.Arrays;
 public class ChessBoard {
 
     private final ChessPiece[][] board = new ChessPiece[8][8];
-    private PieceIterator iterator = new PieceIterator();
+
+    public ChessBoard() {
+    }
 
     /**
      * Adds a chess piece to the chessboard
@@ -95,35 +98,29 @@ public class ChessBoard {
         return Arrays.deepHashCode(board);
     }
 
-    private class PieceIterator { // Allows you go quickly iterate through all the pieces in the board
-        private int row;
-        private int col;
+    public BoardIterator iterator() {
+        return new BoardIterator();
+    }
+    public static class BoardIterator implements Iterator {
 
-        public PieceIterator() {
-            row = 1; // start first row
-            col = 0; // start off the board
+        private int row = 1;
+        private int col = 0;
+        @Override
+        public boolean hasNext() {
+            return col <= 8 || row <= 8;
         }
-        public ChessPiece nextPiece() { // returns null if board is empty, or the next piece in the board
-            ChessPiece piece;
-            do {
-                if (col == 8 && row == 8) {
-                    return null;
-                }
-                if (col <= 8) { // go to next position on row
-                    col++;
-                } else { // go to start of next row
-                    col = 1;
-                    row++;
-                }
-                piece = getPiece(new ChessPosition(row, col));
-            } while (piece == null);
-
-            return piece;
-        }
-
-        public void reset() {
-            row = 1;
-            col = 0;
+        @Override
+        public ChessPosition next() {
+            if (col < 8) {
+                col++;
+            } else {
+                col = 1;
+                row++;
+            }
+            return new ChessPosition(row, col);
         }
     }
+
+
+
 }
