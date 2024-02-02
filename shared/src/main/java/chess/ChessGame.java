@@ -69,11 +69,23 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        if (teamColor == TeamColor.WHITE) {
-
-        } else {
-
-        }
+         ChessBoard.BoardIterator boardIterator = board.iterator();
+         while (boardIterator.hasNext()) {
+             ChessPosition pos = boardIterator.next();
+             ChessPiece piece = board.getPiece(pos);
+             if (piece == null || piece.getTeamColor() == teamColor)
+                 continue;
+             // now we know we have a piece that is the other team's color
+             for (ChessMove move : piece.pieceMoves(board, pos)) {
+                 ChessPiece targetPiece = board.getPiece(move.getEndPosition());
+                 if (targetPiece != null &&
+                     targetPiece.getPieceType() == ChessPiece.PieceType.KING &&
+                     targetPiece.getTeamColor() == teamColor) {
+                     return true;
+                 }
+             }
+         }
+         return false;
     }
 
     /**
@@ -83,7 +95,16 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessBoard.BoardIterator boardIterator = board.iterator();
+        while (boardIterator.hasNext()) {
+            ChessPosition pos = boardIterator.next();
+            ChessPiece piece = board.getPiece(pos);
+            if (piece == null || piece.getTeamColor() != teamColor)
+                continue;
+            if (!validMoves(pos).isEmpty())
+                return false;
+        }
+        return true;
     }
 
     /**
