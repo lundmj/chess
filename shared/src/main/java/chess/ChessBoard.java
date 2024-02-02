@@ -11,7 +11,9 @@ import java.util.Arrays;
 public class ChessBoard {
 
     private final ChessPiece[][] board = new ChessPiece[8][8];
+    private PieceIterator iterator;
     public ChessBoard() {
+        iterator = new PieceIterator();
     }
 
     /**
@@ -100,24 +102,26 @@ public class ChessBoard {
         private int row;
         private int col;
         private ChessPiece piece;
-        PieceIterator() {
-            row = 1;
-            col = 1;
-            piece = getPiece(new ChessPosition(row, col));
-            while (piece == null) {
-                if (col == 8 && row == 8) // reached end of board, no pieces found. piece will remain null
-                    break;
-                if (col <= 8) {
+        public PieceIterator() {
+            row = 1; // start first row
+            col = 0; // start off the board
+            piece = nextPiece();
+        }
+        public ChessPiece nextPiece() { // returns null if board is empty, or the next piece in the board
+            do {
+                if (col == 8 && row == 8) {
+                    return null;
+                }
+                if (col <= 8) { // go to next position on row
                     col++;
-                } else {
+                } else { // go to start of next row
                     col = 1;
                     row++;
                 }
                 piece = getPiece(new ChessPosition(row, col));
-            }
-        }
-        public ChessPiece nextPiece() {
-            while (true)
+            } while (piece == null);
+
+            return piece;
         }
     }
 }
