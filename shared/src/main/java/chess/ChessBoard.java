@@ -11,9 +11,13 @@ import java.util.Iterator;
  */
 public class ChessBoard {
 
-    private final ChessPiece[][] board = new ChessPiece[8][8];
+    private final ChessPiece[][] board;
 
     public ChessBoard() {
+        this.board = new ChessPiece[8][8];
+    }
+    public ChessBoard(ChessBoard original) {
+        this.board = original.board;
     }
 
     /**
@@ -107,7 +111,7 @@ public class ChessBoard {
         private int col = 0;
         @Override
         public boolean hasNext() {
-            return col <= 8 || row <= 8;
+            return col < 8 || row < 8;
         }
         @Override
         public ChessPosition next() {
