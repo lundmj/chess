@@ -17,13 +17,20 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessPiece {
+public class ChessPiece implements Cloneable {
 
     private final ChessGame.TeamColor color;
     private final ChessPiece.PieceType type;
     public ChessPiece(ChessGame.TeamColor color, ChessPiece.PieceType type) {
         this.color = color;
         this.type = type;
+    }
+    public ChessPiece clone() {
+        try {
+            return (ChessPiece) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
@@ -93,7 +100,4 @@ public class ChessPiece {
             case PAWN -> PawnCalculator.pieceMoves(board, myPosition);
         };
     }
-
-    // Private helper methods
-
 }

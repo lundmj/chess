@@ -16,9 +16,19 @@ public class ChessBoard {
     public ChessBoard() {
         this.board = new ChessPiece[8][8];
     }
+
     public ChessBoard(ChessBoard original) {
-        this.board = original.board;
+        this.board = new ChessPiece[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (original.board[i][j] != null) {
+                    this.board[i][j] = original.board[i][j].clone(); // Assuming ChessPiece has a clone method
+                }
+            }
+        }
     }
+
+    // Clone method
 
     /**
      * Adds a chess piece to the chessboard
@@ -30,6 +40,10 @@ public class ChessBoard {
         board[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
+    public void removePiece(ChessPosition position) {
+        board[position.getRow() - 1][position.getColumn() - 1] = null;
+    }
+
     /**
      * Gets a chess piece on the chessboard
      *
@@ -39,6 +53,17 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         return this.board[position.getRow() - 1][position.getColumn() - 1];
+    }
+
+    public void makeMove(ChessMove move) {
+        ChessPosition start = move.getStartPosition();
+        ChessPosition end = move.getEndPosition();
+        ChessPiece piece = getPiece(start);
+        if (move.getPromotionPiece() != null) {
+            piece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+        }
+        addPiece(end, piece);
+        removePiece(start);
     }
 
     /**
@@ -124,7 +149,5 @@ public class ChessBoard {
             return new ChessPosition(row, col);
         }
     }
-
-
-
 }
+
