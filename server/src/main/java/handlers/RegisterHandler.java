@@ -26,7 +26,7 @@ public class RegisterHandler {
             String password = request.password();
             String email = request.email();
             res.status(200);
-            return new Gson().toJson(UserService.register(new UserData(username, password, email), userDAO, authDAO));
+            return new Gson().toJson(UserService.register(username, password, email, userDAO, authDAO));
         } catch (AlreadyTakenException e) {
             res.status(403);
             return new Gson().toJson(new ErrorResponse(e.getMessage()));
