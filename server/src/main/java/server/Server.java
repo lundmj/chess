@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import dataAccess.*;
 import dataAccess.Exceptions.BadRequestException;
 import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
 import handlers.*;
 import responses.ErrorResponse;
 import spark.*;
@@ -39,6 +40,10 @@ public class Server {
         });
         Spark.exception(BadRequestException.class, (e, req, res) -> {
             res.status(400);
+            res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
+        });
+        Spark.exception(UnauthorizedException.class, (e, req, res) -> {
+            res.status(401);
             res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
         });
 

@@ -20,15 +20,10 @@ public class LoginHandler {
     }
 
     public Object handleRequest(Request req, Response res) throws DataAccessException {
-        try {
-            var request = new Gson().fromJson(req.body(), LoginRequest.class);
-            String username = request.username();
-            String password = request.password();
-            res.status(200);
-            return new Gson().toJson(UserService.login(username, password, userDAO, authDAO));
-        } catch (UnauthorizedException e) {
-            res.status(401);
-            return new Gson().toJson(new ErrorResponse(e.getMessage()));
-        }
+        var request = new Gson().fromJson(req.body(), LoginRequest.class);
+        String username = request.username();
+        String password = request.password();
+        res.status(200);
+        return new Gson().toJson(UserService.login(username, password, userDAO, authDAO));
     }
 }

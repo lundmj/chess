@@ -27,8 +27,9 @@ public class GameDAOMemory implements GameDAO {
 
     @Override
     public void joinGame(String username, String clientColor, int gameID) throws DataAccessException {
-        if (!games.containsKey(gameID))
-            throw new BadRequestException();
+
+        if (!games.containsKey(gameID)) throw new BadRequestException();
+        if (clientColor == null) return;
         GameData game = games.remove(gameID);
         boolean isWhite = clientColor.equals("WHITE");
         if ((isWhite && game.whiteUsername() != null)  ||  (!isWhite && game.blackUsername() != null)) {

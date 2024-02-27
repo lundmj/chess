@@ -27,9 +27,6 @@ public class JoinGameHandler {
             res.status(200);
             GameService.joinGame(authToken, playerColor, gameID, authDAO, gameDAO);
             return "{}";
-        } catch (UnauthorizedException e) {
-            res.status(401);
-            return new Gson().toJson(new ErrorResponse(e.getMessage()));
         } catch (AlreadyTakenException e) {
             res.status(403);
             return new Gson().toJson(new ErrorResponse(e.getMessage()));

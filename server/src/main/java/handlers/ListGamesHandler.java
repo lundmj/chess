@@ -23,14 +23,9 @@ public class ListGamesHandler {
         this.gameDAO = gameDAO;
     }
     public Object handleRequest(Request req, Response res) throws DataAccessException {
-        try {
-            String authToken = req.headers("Authorization");
-            res.status(200);
-            return new Gson().toJson(generateResponse(GameService.listGames(authToken, authDAO, gameDAO)));
-        } catch (UnauthorizedException e) {
-            res.status(401);
-            return new Gson().toJson(new ErrorResponse(e.getMessage()));
-        }
+        String authToken = req.headers("Authorization");
+        res.status(200);
+        return new Gson().toJson(generateResponse(GameService.listGames(authToken, authDAO, gameDAO)));
     }
     private GamesListResponse generateResponse(ArrayList<GameData> games) {
         ArrayList<GameInfo> gameInfos = new ArrayList<>();

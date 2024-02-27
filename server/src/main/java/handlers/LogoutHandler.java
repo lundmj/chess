@@ -15,14 +15,9 @@ public class LogoutHandler {
         this.authDAO = authDAO;
     }
     public Object handleRequest(Request req, Response res) throws DataAccessException {
-        try {
-            String authToken = req.headers("Authorization");
-            res.status(200);
-            UserService.logout(authToken, authDAO);
-            return "{}";
-        } catch (UnauthorizedException e) {
-            res.status(401);
-            return new Gson().toJson(new ErrorResponse(e.getMessage()));
-        }
+        String authToken = req.headers("Authorization");
+        res.status(200);
+        UserService.logout(authToken, authDAO);
+        return "{}";
     }
 }

@@ -23,9 +23,7 @@ public class UserService {
     }
 
     private static void verifyFieldsNotEmpty(String username, String password, String email) throws BadRequestException {
-        if (username == null || password == null || email == null) {
-            throw new BadRequestException();
-        }
+        if (username == null || password == null || email == null) throw new BadRequestException();
     }
     private static void validateUser(UserData user, String password) throws UnauthorizedException {
         if (!user.password().equals(password)) throw new UnauthorizedException();
