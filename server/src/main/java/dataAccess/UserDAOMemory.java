@@ -1,7 +1,10 @@
 package dataAccess;
 
+import dataAccess.Exceptions.AlreadyTakenException;
+import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
+import dataAccess.Exceptions.UserNotFoundException;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +16,7 @@ public class UserDAOMemory implements UserDAO {
         if (users.containsKey(username)) {
             return users.get(username);
         } else {
-            throw new UserNotFoundException();
+            throw new UnauthorizedException();
         }
     }
 

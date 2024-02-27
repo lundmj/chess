@@ -2,14 +2,11 @@ package server;
 
 import com.google.gson.Gson;
 import dataAccess.*;
+import dataAccess.Exceptions.BadRequestException;
+import dataAccess.Exceptions.DataAccessException;
 import handlers.*;
-import model.UserData;
-import requests.RegisterRequest;
 import responses.ErrorResponse;
-import service.UserService;
 import spark.*;
-
-import javax.naming.BinaryRefAddr;
 
 public class Server {
     private final UserDAO userDAO = new UserDAOMemory();
@@ -21,6 +18,7 @@ public class Server {
     private final LogoutHandler logoutHandler = new LogoutHandler(authDAO);
     private final ListGamesHandler listGamesHandler = new ListGamesHandler(authDAO, gameDAO);
     private final CreateGameHandler createGameHandler = new CreateGameHandler(authDAO, gameDAO);
+    private final JoinGameHandler joinGameHandler = new JoinGameHandler(authDAO, gameDAO);
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
@@ -32,6 +30,7 @@ public class Server {
         Spark.delete("/session", logoutHandler::handleRequest);
         Spark.get("/game", listGamesHandler::handleRequest);
         Spark.post("/game", createGameHandler::handleRequest);
+        Spark.put("/game", joinGameHandler::handleRequest);
 
         // Universal exceptions
         Spark.exception(DataAccessException.class, (e, req, res) -> {

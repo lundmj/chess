@@ -2,10 +2,9 @@ package handlers;
 
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
-import dataAccess.UnauthorizedException;
+import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
 import dataAccess.UserDAO;
-import model.UserData;
 import requests.LoginRequest;
 import responses.ErrorResponse;
 import service.UserService;

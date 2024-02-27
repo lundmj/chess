@@ -1,11 +1,11 @@
 package service;
 
 import dataAccess.*;
-import dataAccess.BadRequestException;
+import dataAccess.Exceptions.BadRequestException;
+import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
-
-import javax.xml.crypto.Data;
 
 public class UserService {
     public static AuthData register(String username, String password, String email, UserDAO userDAO, AuthDAO authDAO) throws DataAccessException {

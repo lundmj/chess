@@ -1,8 +1,7 @@
 package dataAccess;
 
+import dataAccess.Exceptions.DataAccessException;
 import model.AuthData;
-
-import java.util.UUID;
 
 public interface AuthDAO {
     public AuthData createAuth(String username) throws DataAccessException;

@@ -1,8 +1,7 @@
 package handlers;
 
-import com.google.gson.Gson;
 import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
+import dataAccess.Exceptions.DataAccessException;
 import dataAccess.GameDAO;
 import dataAccess.UserDAO;
 import service.AdminService;

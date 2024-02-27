@@ -2,9 +2,9 @@ package handlers;
 
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
+import dataAccess.Exceptions.DataAccessException;
 import dataAccess.GameDAO;
-import dataAccess.UnauthorizedException;
+import dataAccess.Exceptions.UnauthorizedException;
 import model.GameData;
 import responses.ErrorResponse;
 import responses.GameInfo;

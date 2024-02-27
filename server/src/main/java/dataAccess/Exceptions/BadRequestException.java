@@ -1,4 +1,4 @@
-package dataAccess;
+package dataAccess.Exceptions;
 
 public class BadRequestException extends DataAccessException {
     public BadRequestException() {

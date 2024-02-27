@@ -2,14 +2,12 @@ package handlers;
 
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
-import dataAccess.UnauthorizedException;
+import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
 import responses.ErrorResponse;
 import service.UserService;
 import spark.Request;
 import spark.Response;
-
-import java.util.Set;
 
 public class LogoutHandler {
     private final AuthDAO authDAO;

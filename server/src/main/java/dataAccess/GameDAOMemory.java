@@ -1,12 +1,14 @@
 package dataAccess;
 
 import chess.ChessGame;
+import dataAccess.Exceptions.AlreadyTakenException;
+import dataAccess.Exceptions.BadRequestException;
+import dataAccess.Exceptions.DataAccessException;
 import model.GameData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
 
 public class GameDAOMemory implements GameDAO {
 
@@ -24,7 +26,18 @@ public class GameDAOMemory implements GameDAO {
     }
 
     @Override
-    public void joinGame(String clientColor, int gameID) throws DataAccessException {
+    public void joinGame(String username, String clientColor, int gameID) throws DataAccessException {
+        if (!games.containsKey(gameID))
+            throw new BadRequestException();
+        GameData game = games.remove(gameID);
+        boolean isWhite = clientColor.equals("WHITE");
+        if ((isWhite && game.whiteUsername() != null)  ||  (!isWhite && game.blackUsername() != null)) {
+            throw new AlreadyTakenException();
+        }
+        if (isWhite)
+            games.put(gameID, new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game()));
+        else
+            games.put(gameID, new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game()));
 
     }
 

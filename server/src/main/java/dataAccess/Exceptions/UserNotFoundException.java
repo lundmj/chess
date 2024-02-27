@@ -1,4 +1,4 @@
-package dataAccess;
+package dataAccess.Exceptions;
 
 public class UserNotFoundException extends DataAccessException{
     public UserNotFoundException() {
