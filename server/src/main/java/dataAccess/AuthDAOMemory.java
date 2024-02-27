@@ -18,16 +18,24 @@ public class AuthDAOMemory implements AuthDAO {
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        return auths.get(authToken);
+        if (auths.containsKey(authToken)) {
+            return auths.get(authToken);
+        } else {
+            throw new UnauthorizedException();
+        }
     }
 
     @Override
-    public void deleteAuths() throws DataAccessException {
+    public void deleteAuths() {
         auths = new HashMap<>();
     }
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        auths.remove(authToken);
+        if (auths.containsKey(authToken)) {
+            auths.remove(authToken);
+        } else {
+            throw new UnauthorizedException();
+        }
     }
 }

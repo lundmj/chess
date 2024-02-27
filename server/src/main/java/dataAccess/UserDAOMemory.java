@@ -27,7 +27,7 @@ public class UserDAOMemory implements UserDAO {
     }
 
     @Override
-    public void deleteUsers() throws DataAccessException {
+    public void deleteUsers() {
         users = new HashMap<>();
     }
 }

@@ -5,6 +5,8 @@ import dataAccess.BadRequestException;
 import model.AuthData;
 import model.UserData;
 
+import javax.xml.crypto.Data;
+
 public class UserService {
     public static AuthData register(String username, String password, String email, UserDAO userDAO, AuthDAO authDAO) throws DataAccessException {
         verifyFieldsNotEmpty(username, password, email);
@@ -16,7 +18,9 @@ public class UserService {
         validateUser(user, password);
         return authDAO.createAuth(username);
     }
-    public static void logout(UserData user) {}
+    public static void logout(String authToken, AuthDAO authDAO) throws DataAccessException {
+        authDAO.deleteAuth(authToken);
+    }
 
     private static void verifyFieldsNotEmpty(String username, String password, String email) throws BadRequestException {
         if (username == null || password == null || email == null) {
