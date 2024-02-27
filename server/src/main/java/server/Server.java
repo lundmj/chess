@@ -19,6 +19,7 @@ public class Server {
     private final DeleteHandler deleteHandler = new DeleteHandler(userDAO, authDAO, gameDAO);
     private final LoginHandler loginHandler = new LoginHandler(userDAO, authDAO);
     private final LogoutHandler logoutHandler = new LogoutHandler(authDAO);
+    private final ListGamesHandler listGamesHandler = new ListGamesHandler(authDAO, gameDAO);
     private final CreateGameHandler createGameHandler = new CreateGameHandler(authDAO, gameDAO);
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -29,6 +30,7 @@ public class Server {
         Spark.post("/user", registerHandler::handleRequest);
         Spark.post("/session", loginHandler::handleRequest);
         Spark.delete("/session", logoutHandler::handleRequest);
+        Spark.get("/game", listGamesHandler::handleRequest);
         Spark.post("/game", createGameHandler::handleRequest);
 
         // Universal exceptions

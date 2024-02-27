@@ -12,8 +12,8 @@ public class GameDAOMemory implements GameDAO {
 
     private Map<Integer, GameData> games = new HashMap<>();
     @Override
-    public ArrayList<ChessGame> listGames() throws DataAccessException {
-        return null;
+    public ArrayList<GameData> listGames() {
+        return new ArrayList<>(games.values());
     }
 
     @Override
