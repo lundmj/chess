@@ -22,6 +22,6 @@ public class DeleteHandler{
     public Object handleRequest(Request req, Response res) throws DataAccessException {
        AdminService.clear(userDAO, authDAO, gameDAO);
        res.status(200);
-       return "";
+       return "{}";
     }
 }

@@ -2,10 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataAccess.*;
-import handlers.DeleteHandler;
-import handlers.LoginHandler;
-import handlers.LogoutHandler;
-import handlers.RegisterHandler;
+import handlers.*;
 import model.UserData;
 import requests.RegisterRequest;
 import responses.ErrorResponse;
@@ -22,6 +19,7 @@ public class Server {
     private final DeleteHandler deleteHandler = new DeleteHandler(userDAO, authDAO, gameDAO);
     private final LoginHandler loginHandler = new LoginHandler(userDAO, authDAO);
     private final LogoutHandler logoutHandler = new LogoutHandler(authDAO);
+    private final CreateGameHandler createGameHandler = new CreateGameHandler(authDAO, gameDAO);
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
@@ -31,6 +29,7 @@ public class Server {
         Spark.post("/user", registerHandler::handleRequest);
         Spark.post("/session", loginHandler::handleRequest);
         Spark.delete("/session", logoutHandler::handleRequest);
+        Spark.post("/game", createGameHandler::handleRequest);
 
         // Universal exceptions
         Spark.exception(DataAccessException.class, (e, req, res) -> {
