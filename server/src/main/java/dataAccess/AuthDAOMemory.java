@@ -11,7 +11,7 @@ import java.util.UUID;
 public class AuthDAOMemory implements AuthDAO {
     private Map<String, AuthData> auths = new HashMap<>();
     @Override
-    public AuthData createAuth(String username) throws DataAccessException {
+    public AuthData createAuth(String username) {
         String authToken = UUID.randomUUID().toString();
         AuthData authData = new AuthData(authToken, username);
         auths.put(authToken, authData);
@@ -39,5 +39,9 @@ public class AuthDAOMemory implements AuthDAO {
         } else {
             throw new UnauthorizedException();
         }
+    }
+
+    public int size() {
+        return auths.size();
     }
 }

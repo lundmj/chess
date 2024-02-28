@@ -19,7 +19,8 @@ public class GameDAOMemory implements GameDAO {
     }
 
     @Override
-    public int createGame(String gameName) {
+    public int createGame(String gameName) throws DataAccessException {
+        if (gameName == null) throw new BadRequestException();
         int id = getUniqueID();
         games.put(id, new GameData(id, null, null, gameName, new ChessGame()));
         return id;
@@ -27,20 +28,23 @@ public class GameDAOMemory implements GameDAO {
 
     @Override
     public void joinGame(String username, String clientColor, int gameID) throws DataAccessException {
+        if (!games.containsKey(gameID)) {
+            throw new BadRequestException();
+        }
+        if (clientColor == null) {
+            return; // No color specified, do nothing
+        }
 
-        if (!games.containsKey(gameID)) throw new BadRequestException();
-        if (clientColor == null) return;
         GameData game = games.remove(gameID);
         boolean isWhite = clientColor.equals("WHITE");
-        if ((isWhite && game.whiteUsername() != null)  ||  (!isWhite && game.blackUsername() != null)) {
+        if ((isWhite && game.whiteUsername() != null) || (!isWhite && game.blackUsername() != null)) {
             throw new AlreadyTakenException();
         }
-        if (isWhite)
-            games.put(gameID, new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game()));
-        else
-            games.put(gameID, new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game()));
-
+        String newWhiteUsername = isWhite ? username : game.whiteUsername();
+        String newBlackUsername = isWhite ? game.blackUsername() : username;
+        games.put(gameID, new GameData(gameID, newWhiteUsername, newBlackUsername, game.gameName(), game.game()));
     }
+
 
     @Override
     public void deleteGames() {
@@ -54,5 +58,8 @@ public class GameDAOMemory implements GameDAO {
                 return id;
             } else id++;
         }
+    }
+    public int size() {
+        return games.size();
     }
 }

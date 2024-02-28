@@ -19,17 +19,12 @@ public class JoinGameHandler {
         this.gameDAO = gameDAO;
     }
     public Object handleRequest(Request req, Response res) throws DataAccessException {
-        try {
-            var request = new Gson().fromJson(req.body(), JoinRequest.class);
-            String playerColor = request.playerColor();
-            int gameID = request.gameID();
-            String authToken = req.headers("Authorization");
-            res.status(200);
-            GameService.joinGame(authToken, playerColor, gameID, authDAO, gameDAO);
-            return "{}";
-        } catch (AlreadyTakenException e) {
-            res.status(403);
-            return new Gson().toJson(new ErrorResponse(e.getMessage()));
-        }
+        var request = new Gson().fromJson(req.body(), JoinRequest.class);
+        String playerColor = request.playerColor();
+        int gameID = request.gameID();
+        String authToken = req.headers("Authorization");
+        res.status(200);
+        GameService.joinGame(authToken, playerColor, gameID, authDAO, gameDAO);
+        return "{}";
     }
 }

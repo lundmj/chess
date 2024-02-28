@@ -22,6 +22,8 @@ public class UserService {
         authDAO.deleteAuth(authToken);
     }
 
+
+    // private helper methods
     private static void verifyFieldsNotEmpty(String username, String password, String email) throws BadRequestException {
         if (username == null || password == null || email == null) throw new BadRequestException();
     }

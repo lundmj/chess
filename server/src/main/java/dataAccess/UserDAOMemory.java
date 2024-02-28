@@ -3,7 +3,6 @@ package dataAccess;
 import dataAccess.Exceptions.AlreadyTakenException;
 import dataAccess.Exceptions.DataAccessException;
 import dataAccess.Exceptions.UnauthorizedException;
-import dataAccess.Exceptions.UserNotFoundException;
 import model.UserData;
 
 import java.util.HashMap;
@@ -32,5 +31,9 @@ public class UserDAOMemory implements UserDAO {
     @Override
     public void deleteUsers() {
         users = new HashMap<>();
+    }
+
+    public int size() {
+        return users.size();
     }
 }

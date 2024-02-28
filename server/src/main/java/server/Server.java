@@ -2,9 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataAccess.*;
-import dataAccess.Exceptions.BadRequestException;
-import dataAccess.Exceptions.DataAccessException;
-import dataAccess.Exceptions.UnauthorizedException;
+import dataAccess.Exceptions.*;
 import handlers.*;
 import responses.ErrorResponse;
 import spark.*;
@@ -13,27 +11,21 @@ public class Server {
     private final UserDAO userDAO = new UserDAOMemory();
     private final AuthDAO authDAO = new AuthDAOMemory();
     private final GameDAO gameDAO = new GameDAOMemory();
-    private final RegisterHandler registerHandler = new RegisterHandler(userDAO, authDAO);
-    private final DeleteHandler deleteHandler = new DeleteHandler(userDAO, authDAO, gameDAO);
-    private final LoginHandler loginHandler = new LoginHandler(userDAO, authDAO);
-    private final LogoutHandler logoutHandler = new LogoutHandler(authDAO);
-    private final ListGamesHandler listGamesHandler = new ListGamesHandler(authDAO, gameDAO);
-    private final CreateGameHandler createGameHandler = new CreateGameHandler(authDAO, gameDAO);
-    private final JoinGameHandler joinGameHandler = new JoinGameHandler(authDAO, gameDAO);
-    public int run(int desiredPort) {
-        Spark.port(desiredPort);
+    public int run(int port) {
+        Spark.port(port);
 
         Spark.staticFiles.location("web");
 
-        Spark.delete("/db", deleteHandler::handleRequest);
-        Spark.post("/user", registerHandler::handleRequest);
-        Spark.post("/session", loginHandler::handleRequest);
-        Spark.delete("/session", logoutHandler::handleRequest);
-        Spark.get("/game", listGamesHandler::handleRequest);
-        Spark.post("/game", createGameHandler::handleRequest);
-        Spark.put("/game", joinGameHandler::handleRequest);
+        // Endpoints
+        Spark.delete("/db", new DeleteHandler(userDAO, authDAO, gameDAO)::handleRequest);
+        Spark.post("/user", new RegisterHandler(userDAO, authDAO)::handleRequest);
+        Spark.post("/session", new LoginHandler(userDAO, authDAO)::handleRequest);
+        Spark.delete("/session", new LogoutHandler(authDAO)::handleRequest);
+        Spark.get("/game", new ListGamesHandler(authDAO, gameDAO)::handleRequest);
+        Spark.post("/game", new CreateGameHandler(authDAO, gameDAO)::handleRequest);
+        Spark.put("/game", new JoinGameHandler(authDAO, gameDAO)::handleRequest);
 
-        // Universal exceptions
+        // Exceptions
         Spark.exception(DataAccessException.class, (e, req, res) -> {
             res.status(500);
             res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
@@ -44,6 +36,10 @@ public class Server {
         });
         Spark.exception(UnauthorizedException.class, (e, req, res) -> {
             res.status(401);
+            res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
+        });
+        Spark.exception(AlreadyTakenException.class, (e, req, res) -> {
+            res.status(403);
             res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
         });
 

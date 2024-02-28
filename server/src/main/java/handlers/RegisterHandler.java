@@ -21,20 +21,11 @@ public class RegisterHandler {
     }
 
     public Object handleRequest(Request req, Response res) throws DataAccessException {
-        try {
-            var request = new Gson().fromJson(req.body(), RegisterRequest.class);
-            String username = request.username();
-            String password = request.password();
-            String email = request.email();
-            res.status(200);
-            return new Gson().toJson(UserService.register(username, password, email, userDAO, authDAO));
-        } catch (AlreadyTakenException e) {
-            res.status(403);
-            return new Gson().toJson(new ErrorResponse(e.getMessage()));
-        }
+        var request = new Gson().fromJson(req.body(), RegisterRequest.class);
+        String username = request.username();
+        String password = request.password();
+        String email = request.email();
+        res.status(200);
+        return new Gson().toJson(UserService.register(username, password, email, userDAO, authDAO));
     }
-
-
-
-
 }

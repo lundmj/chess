@@ -6,9 +6,10 @@ import model.GameData;
 import java.util.ArrayList;
 
 public interface GameDAO {
-    public ArrayList<GameData> listGames() throws DataAccessException;
-    public int createGame(String gameName) throws DataAccessException;
-    public void joinGame(String username, String clientColor, int gameID) throws DataAccessException;
+    ArrayList<GameData> listGames() throws DataAccessException;
+    int createGame(String gameName) throws DataAccessException;
+    void joinGame(String username, String clientColor, int gameID) throws DataAccessException;
 
-    public void deleteGames() throws DataAccessException;
+    void deleteGames() throws DataAccessException;
+    int size();
 }
