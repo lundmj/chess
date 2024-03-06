@@ -2,6 +2,7 @@ package dataAccess;
 
 import dataAccess.Exceptions.AlreadyTakenException;
 import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
 import model.UserData;
 
 import java.sql.ResultSet;
@@ -51,15 +52,19 @@ public class UserDAOSQL implements UserDAO {
         } catch (Exception e) {
             throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
         }
-        return null;
+        throw new UnauthorizedException();
     }
 
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
-        if (getUser(username) != null)
-            throw new AlreadyTakenException();
-        var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, username, password, email);
+        try {
+            getUser(username);
+        } catch (UnauthorizedException e) {
+            var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+            executeUpdate(statement, username, password, email);
+            return;
+        }
+        throw new AlreadyTakenException();
     }
 
     @Override

@@ -1,7 +1,10 @@
 package sqlTests;
 
 import dataAccess.*;
+import dataAccess.Exceptions.AlreadyTakenException;
+import dataAccess.Exceptions.BadRequestException;
 import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,7 +42,7 @@ public class SqlTests {
     }
 
     @BeforeEach
-    public void clearData() {
+    public void clearData() { // always clear out data before every test
         assertDoesNotThrow(() -> {
             userDAO.deleteUsers();
             authDAO.deleteAuths();
@@ -48,9 +51,20 @@ public class SqlTests {
     }
 
     @Test @DisplayName("Good Get User")
-    public void goodGetUser() throws TestException {}
+    public void goodGetUser() throws TestException {
+        assertDoesNotThrow(() -> {
+            userDAO.createUser(username, password, email);
+            userDAO.createUser("other", "newpass", "yada@yada.yada");
+            String returnedUsername = userDAO.getUser(username).username();
+            assertEquals(username, returnedUsername);
+        });
+    }
     @Test @DisplayName("Bad Get User")
-    public void badGetUser() throws TestException {}
+    public void badGetUser() throws TestException {
+        assertThrows(UnauthorizedException.class, () -> {
+            userDAO.getUser(username);
+        });
+    }
     @Test @DisplayName("Good Create User")
     public void goodCreateUser() throws TestException {
         assertDoesNotThrow(() -> {
@@ -60,7 +74,12 @@ public class SqlTests {
         });
     }
     @Test @DisplayName("Bad Create User")
-    public void badCreateUser() throws TestException {}
+    public void badCreateUser() throws TestException {
+        assertThrows(AlreadyTakenException.class, () -> {
+            userDAO.createUser(username, password, email);
+            userDAO.createUser(username, password, email);
+        });
+    }
     @Test @DisplayName("Good Delete Users")
     public void goodDeleteUsers() throws TestException {
         assertDoesNotThrow(() -> {
