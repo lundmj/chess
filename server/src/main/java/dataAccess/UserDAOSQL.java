@@ -1,5 +1,6 @@
 package dataAccess;
 
+import dataAccess.Exceptions.AlreadyTakenException;
 import dataAccess.Exceptions.DataAccessException;
 import model.UserData;
 
@@ -12,16 +13,6 @@ import static java.sql.Types.NULL;
 public class UserDAOSQL implements UserDAO {
 
 
-
-    private static String createStatement = """
-        CREATE TABLE IF NOT EXISTS chess.users (
-          `username` varchar(256) NOT NULL,
-          `password` varchar(256) NOT NULL,
-          `email` varchar(256) NOT NULL,
-          PRIMARY KEY (`username`)
-        )
-        """;
-
     public UserDAOSQL() throws DataAccessException {
         configureDatabase();
     }
@@ -29,6 +20,14 @@ public class UserDAOSQL implements UserDAO {
     private void configureDatabase() throws DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
+            String createStatement = """
+                    CREATE TABLE IF NOT EXISTS chess.users (
+                      `username` varchar(256) NOT NULL,
+                      `password` varchar(256) NOT NULL,
+                      `email` varchar(256) NOT NULL,
+                      PRIMARY KEY (`username`)
+                    )
+                    """;
             try (var preparedStatement = conn.prepareStatement(createStatement)) {
                 preparedStatement.executeUpdate();
             }
@@ -57,13 +56,16 @@ public class UserDAOSQL implements UserDAO {
 
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
+        if (getUser(username) != null)
+            throw new AlreadyTakenException();
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         executeUpdate(statement, username, password, email);
     }
 
     @Override
     public void deleteUsers() throws DataAccessException {
-
+        var statement = "TRUNCATE users";
+        executeUpdate(statement);
     }
 
     @Override

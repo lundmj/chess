@@ -19,8 +19,8 @@ public class SqlTests {
     private static String email;
     private static String gameName;
 
-    @BeforeEach
-    public void initializeDAOs() {
+    @BeforeAll
+    public static void initializeDAOs() {
         try {
             userDAO = new UserDAOSQL();
             authDAO = new AuthDAOSQL();
@@ -29,12 +29,22 @@ public class SqlTests {
             throw new RuntimeException(e);
         }
     }
+
     @BeforeAll
     public static void initializeData() {
         username = "mjlund01";
         password = "myPass123";
         email = "fo@pa.com";
         gameName = "MahBabyGame";
+    }
+
+    @BeforeEach
+    public void clearData() {
+        assertDoesNotThrow(() -> {
+            userDAO.deleteUsers();
+            authDAO.deleteAuths();
+            gameDAO.deleteGames();
+        });
     }
 
     @Test @DisplayName("Good Get User")
@@ -44,16 +54,24 @@ public class SqlTests {
     @Test @DisplayName("Good Create User")
     public void goodCreateUser() throws TestException {
         assertDoesNotThrow(() -> {
-            int size = userDAO.size();
-            System.out.println(size);
+            assertEquals(userDAO.size(), 0);
             userDAO.createUser(username, password, email);
-            assertNotEquals(size, userDAO.size()); //assert it got bigger
+            assertEquals(userDAO.size(), 1); //assert it got bigger
         });
     }
     @Test @DisplayName("Bad Create User")
     public void badCreateUser() throws TestException {}
     @Test @DisplayName("Good Delete Users")
-    public void goodDeleteUsers() throws TestException {}
+    public void goodDeleteUsers() throws TestException {
+        assertDoesNotThrow(() -> {
+            userDAO.createUser(username, password, email);
+            userDAO.createUser("new", password, email);
+            userDAO.createUser("other", password, email);
+            assertEquals(userDAO.size(), 3);
+            userDAO.deleteUsers();
+            assertEquals(userDAO.size(), 0);
+        });
+    }
 
 
     @Test @DisplayName("Good Create Auth")
