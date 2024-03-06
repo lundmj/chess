@@ -7,11 +7,23 @@ import handlers.*;
 import responses.ErrorResponse;
 import spark.*;
 
+import javax.xml.crypto.Data;
+
 public class Server {
-    private final UserDAO userDAO = new UserDAOMemory();
-    private final AuthDAO authDAO = new AuthDAOMemory();
-    private final GameDAO gameDAO = new GameDAOMemory();
+    private final UserDAO userDAO;
+    private final AuthDAO authDAO;
+    private final GameDAO gameDAO;
+    public Server() {
+        try {
+            this.userDAO = new UserDAOSQL();
+            this.authDAO = new AuthDAOSQL();
+            this.gameDAO = new GameDAOSQL();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public int run(int port) {
+
         Spark.port(port);
 
         Spark.staticFiles.location("web");
@@ -26,10 +38,6 @@ public class Server {
         Spark.put("/game", new JoinGameHandler(authDAO, gameDAO)::handleRequest);
 
         // Exceptions
-        Spark.exception(DataAccessException.class, (e, req, res) -> {
-            res.status(500);
-            res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
-        });
         Spark.exception(BadRequestException.class, (e, req, res) -> {
             res.status(400);
             res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
@@ -40,6 +48,10 @@ public class Server {
         });
         Spark.exception(AlreadyTakenException.class, (e, req, res) -> {
             res.status(403);
+            res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
+        });
+        Spark.exception(DataAccessException.class, (e, req, res) -> {
+            res.status(500);
             res.body(new Gson().toJson(new ErrorResponse(e.getMessage())));
         });
 
