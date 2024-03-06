@@ -76,5 +76,25 @@ public class UserDAOSQL implements UserDAO {
         var email = rs.getString("email");
         return new UserData(username, password, email);
     }
+    private String executeUpdate(String statement, Object... params) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+                for (var i = 0; i < params.length; i++) {
+                    var param = params[i];
+                    if (param instanceof String p) ps.setString(i + 1, p);
+                    else if (param == null) ps.setNull(i + 1, NULL);
+                }
+                ps.executeUpdate();
 
+                var rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getString(1);
+                }
+
+                return "";
+            }
+        } catch (SQLException e) {
+           throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
+        }
+    }
 }
