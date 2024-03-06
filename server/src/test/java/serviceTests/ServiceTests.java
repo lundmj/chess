@@ -29,8 +29,8 @@ public class ServiceTests {
         authDAO = new AuthDAOMemory();
         gameDAO = new GameDAOMemory();
     }
-    @BeforeEach
-    public void initializeData() throws TestException {
+    @BeforeAll
+    public static void initializeData() {
         username = "mjlund01";
         password = "myPass123";
         email = "fo@pa.com";

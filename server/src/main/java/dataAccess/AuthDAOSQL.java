@@ -1,6 +1,7 @@
 package dataAccess;
 
 import dataAccess.Exceptions.DataAccessException;
+import model.AuthData;
 
 import java.sql.*;
 
@@ -26,5 +27,30 @@ public class AuthDAOSQL implements AuthDAO {
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
+    }
+
+    @Override
+    public AuthData createAuth(String username) throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        return null;
+    }
+
+    @Override
+    public void deleteAuths() throws DataAccessException {
+
+    }
+
+    @Override
+    public void deleteAuth(String authToken) throws DataAccessException {
+
+    }
+
+    @Override
+    public int size() {
+        return 0;
     }
 }

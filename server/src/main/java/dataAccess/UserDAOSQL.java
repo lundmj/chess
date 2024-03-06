@@ -57,7 +57,8 @@ public class UserDAOSQL implements UserDAO {
 
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
-
+        var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+        executeUpdate(statement, username, password, email);
     }
 
     @Override
@@ -67,6 +68,16 @@ public class UserDAOSQL implements UserDAO {
 
     @Override
     public int size() {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT COUNT(*) FROM users";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        } catch (Exception e) {return 0;}
         return 0;
     }
 
@@ -76,7 +87,7 @@ public class UserDAOSQL implements UserDAO {
         var email = rs.getString("email");
         return new UserData(username, password, email);
     }
-    private String executeUpdate(String statement, Object... params) throws DataAccessException {
+    private void executeUpdate(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
@@ -85,13 +96,6 @@ public class UserDAOSQL implements UserDAO {
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
-
-                var rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getString(1);
-                }
-
-                return "";
             }
         } catch (SQLException e) {
            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
