@@ -94,7 +94,13 @@ public class SqlTests {
 
 
     @Test @DisplayName("Good Create Auth")
-    public void goodCreateAuth() throws TestException {}
+    public void goodCreateAuth() throws TestException {
+        assertDoesNotThrow(() -> {
+            assertEquals(authDAO.size(), 0);
+            authDAO.createAuth(username);
+            assertEquals(authDAO.size(), 1);
+        });
+    }
     @Test @DisplayName("Bad Create Auth")
     public void badCreateAuth() throws TestException {}
     @Test @DisplayName("Good Get Auth")

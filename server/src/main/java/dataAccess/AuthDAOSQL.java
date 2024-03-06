@@ -4,6 +4,7 @@ import dataAccess.Exceptions.DataAccessException;
 import model.AuthData;
 
 import java.sql.*;
+import java.util.UUID;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -33,7 +34,9 @@ public class AuthDAOSQL implements AuthDAO {
 
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
-        return null;
+        var statement = "INSERT INTO auths (authToken, username) VALUES (?, ?)";
+        String authToken = executeUpdate(statement, UUID.randomUUID().toString(), username);
+        return new AuthData(authToken, username);
     }
 
     @Override
@@ -54,6 +57,16 @@ public class AuthDAOSQL implements AuthDAO {
 
     @Override
     public int size() {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT COUNT(*) FROM auths";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        } catch (Exception e) {return 0;}
         return 0;
     }
 
