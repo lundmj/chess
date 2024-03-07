@@ -6,11 +6,15 @@ import dataAccess.Exceptions.BadRequestException;
 import dataAccess.Exceptions.DataAccessException;
 import dataAccess.Exceptions.UnauthorizedException;
 import model.AuthData;
+import model.GameData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import passoffTests.testClasses.TestException;
+
+import java.util.ArrayList;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SqlTests {
@@ -62,9 +66,7 @@ public class SqlTests {
     }
     @Test @DisplayName("Bad Get User")
     public void badGetUser() throws TestException {
-        assertThrows(UnauthorizedException.class, () -> {
-            userDAO.getUser(username);
-        });
+        assertThrows(UnauthorizedException.class, () -> userDAO.getUser(username));
     }
     @Test @DisplayName("Good Create User")
     public void goodCreateUser() throws TestException {
@@ -159,13 +161,45 @@ public class SqlTests {
         assertThrows(BadRequestException.class, () -> gameDAO.createGame(null));
     }
     @Test @DisplayName("Good List Games")
-    public void goodListGames() throws TestException {}
+    public void goodListGames() throws TestException {
+        assertDoesNotThrow(() -> {
+            int id = gameDAO.createGame(gameName);
+            int id2 = gameDAO.createGame("otherGame");
+            int id3 = gameDAO.createGame("thirdGame");
+            ArrayList<GameData> games = gameDAO.listGames();
+            assertEquals(games.get(0).id(), id);
+            assertEquals(games.get(0).gameName(), gameName);
+            assertEquals(games.get(1).id(), id2);
+            assertEquals(games.get(1).gameName(), "otherGame");
+            assertEquals(games.get(2).id(), id3);
+            assertEquals(games.get(2).gameName(), "thirdGame");
+        });
+    }
     @Test @DisplayName("Bad List Games")
-    public void badListGames() throws TestException {}
+    public void badListGames() throws TestException {
+
+    }
     @Test @DisplayName("Good Join")
-    public void goodJoin() throws TestException {}
+    public void goodJoin() throws TestException {
+        assertDoesNotThrow(() -> {
+            int id = gameDAO.createGame(gameName);
+            gameDAO.joinGame(username, "WHITE", id);
+            GameData game = gameDAO.listGames().getFirst();
+            assertEquals(game.gameName(), gameName);
+            assertEquals(game.id(), id);
+            assertEquals(game.whiteUsername(), username);
+            assertNull(game.blackUsername());
+        });
+    }
     @Test @DisplayName("Bad Join")
-    public void badJoin() throws TestException {}
+    public void badJoin() throws TestException {
+        assertThrows(BadRequestException.class, () -> gameDAO.joinGame(username, "WHITE", 50));
+        assertThrows(AlreadyTakenException.class, () -> {
+            int id = gameDAO.createGame(gameName);
+            gameDAO.joinGame(username, "BLACK", id);
+            gameDAO.joinGame("other", "BLACK", id);
+        });
+    }
     @Test @DisplayName("Good Delete Games")
     public void goodDeleteGames() throws TestException {}
 
