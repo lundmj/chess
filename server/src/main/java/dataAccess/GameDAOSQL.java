@@ -68,9 +68,9 @@ public class GameDAOSQL implements GameDAO {
 
     @Override
     public void joinGame(String username, String clientColor, int gameID) throws DataAccessException {
-        if (clientColor == null) return;
-        boolean isWhite = clientColor.equals("WHITE");
+        boolean isWhite = clientColor != null && clientColor.equals("WHITE");
         GameData game = getGame(gameID); // will throw BadRequestException if game doesn't exist
+        if (clientColor == null) return;
         if ((isWhite && game.whiteUsername() != null) || (!isWhite && game.blackUsername() != null)) {
             throw new AlreadyTakenException();
         }

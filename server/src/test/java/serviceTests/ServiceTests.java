@@ -3,6 +3,7 @@ package serviceTests;
 import dataAccess.*;
 import dataAccess.Exceptions.AlreadyTakenException;
 import dataAccess.Exceptions.BadRequestException;
+import dataAccess.Exceptions.DataAccessException;
 import dataAccess.Exceptions.UnauthorizedException;
 import model.AuthData;
 import org.junit.jupiter.api.*;
@@ -23,11 +24,15 @@ public class ServiceTests {
     private static String password;
     private static String email;
     private static String gameName;
-    @BeforeEach
-    public void initializeDAOs() {
-        userDAO = new UserDAOMemory();
-        authDAO = new AuthDAOMemory();
-        gameDAO = new GameDAOMemory();
+    @BeforeAll
+    public static void initializeDAOs() {
+        try {
+            userDAO = new UserDAOSQL();
+            authDAO = new AuthDAOSQL();
+            gameDAO = new GameDAOSQL();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
     @BeforeAll
     public static void initializeData() {
@@ -35,6 +40,14 @@ public class ServiceTests {
         password = "myPass123";
         email = "fo@pa.com";
         gameName = "MahBabyGame";
+    }
+    @BeforeEach
+    public void clearData() { // always clear out data before every test
+        assertDoesNotThrow(() -> {
+            userDAO.deleteUsers();
+            authDAO.deleteAuths();
+            gameDAO.deleteGames();
+        });
     }
     @Test @DisplayName("Good Register")
     public void goodRegister() throws TestException {
