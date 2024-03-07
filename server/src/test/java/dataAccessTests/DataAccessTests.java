@@ -1,4 +1,4 @@
-package sqlTests;
+package dataAccessTests;
 
 import dataAccess.*;
 import dataAccess.Exceptions.AlreadyTakenException;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SqlTests {
+public class DataAccessTests {
 
     private static UserDAO userDAO;
     private static AuthDAO authDAO;
