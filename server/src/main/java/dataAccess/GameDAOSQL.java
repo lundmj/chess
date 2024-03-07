@@ -1,5 +1,8 @@
 package dataAccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
+import dataAccess.Exceptions.BadRequestException;
 import dataAccess.Exceptions.DataAccessException;
 import model.GameData;
 
@@ -41,7 +44,11 @@ public class GameDAOSQL implements GameDAO {
 
     @Override
     public int createGame(String gameName) throws DataAccessException {
-        return 0;
+        if (gameName == null) throw new BadRequestException();
+        ChessGame game = new ChessGame();
+        String gameJson = new Gson().toJson(game);
+        var statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
+        return executeUpdate(statement, null, null, gameName, gameJson);
     }
 
     @Override
@@ -57,6 +64,16 @@ public class GameDAOSQL implements GameDAO {
 
     @Override
     public int size() {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT COUNT(*) FROM games";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        } catch (Exception e) {return 0;}
         return 0;
     }
 
@@ -68,7 +85,9 @@ public class GameDAOSQL implements GameDAO {
                     switch (param) {
                         case String p -> ps.setString(i + 1, p);
                         case Integer p -> ps.setInt(i + 1, p);
-                        default -> ps.setNull(i + 1, NULL);
+                        case null -> ps.setNull(i + 1, NULL);
+                        default -> {
+                        }
                     }
                 }
                 ps.executeUpdate();

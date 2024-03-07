@@ -146,15 +146,22 @@ public class SqlTests {
         });
     }
 
-
+    @Test @DisplayName("Good Create Game")
+    public void goodCreateGame() throws TestException {
+        assertDoesNotThrow(() -> {
+            assertEquals(gameDAO.size(), 0);
+            gameDAO.createGame(gameName);
+            assertEquals(gameDAO.size(), 1);
+        });
+    }
+    @Test @DisplayName("Bad Create Game")
+    public void badCreateGame() throws TestException {
+        assertThrows(BadRequestException.class, () -> gameDAO.createGame(null));
+    }
     @Test @DisplayName("Good List Games")
     public void goodListGames() throws TestException {}
     @Test @DisplayName("Bad List Games")
     public void badListGames() throws TestException {}
-    @Test @DisplayName("Good Create Game")
-    public void goodCreateGame() throws TestException {}
-    @Test @DisplayName("Bad Create Game")
-    public void badCreateGame() throws TestException {}
     @Test @DisplayName("Good Join")
     public void goodJoin() throws TestException {}
     @Test @DisplayName("Bad Join")
