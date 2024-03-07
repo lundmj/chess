@@ -22,7 +22,7 @@ public class UserDAOSQL implements UserDAO {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
             String createStatement = """
-                    CREATE TABLE IF NOT EXISTS chess.users (
+                    CREATE TABLE IF NOT EXISTS users (
                       `username` varchar(256) NOT NULL,
                       `password` varchar(256) NOT NULL,
                       `email` varchar(256) NOT NULL,

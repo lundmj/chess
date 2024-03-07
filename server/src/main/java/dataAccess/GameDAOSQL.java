@@ -22,7 +22,7 @@ public class GameDAOSQL implements GameDAO {
     private void configureDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             String createStatement = """
-                    CREATE TABLE IF NOT EXISTS chess.games (
+                    CREATE TABLE IF NOT EXISTS games (
                       `id` int NOT NULL AUTO_INCREMENT,
                       `whiteUsername` varchar(256),
                       `blackUsername` varchar(256),

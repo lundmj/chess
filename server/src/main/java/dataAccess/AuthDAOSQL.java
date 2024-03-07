@@ -20,7 +20,7 @@ public class AuthDAOSQL implements AuthDAO {
     private void configureDatabase() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             String createStatement = """
-                    CREATE TABLE IF NOT EXISTS chess.auths (
+                    CREATE TABLE IF NOT EXISTS auths (
                       `authToken` varchar(256) NOT NULL,
                       `username` varchar(256) NOT NULL,
                       PRIMARY KEY (`authToken`)
