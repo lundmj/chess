@@ -201,6 +201,18 @@ public class SqlTests {
         });
     }
     @Test @DisplayName("Good Delete Games")
-    public void goodDeleteGames() throws TestException {}
+    public void goodDeleteGames() throws TestException {
+        assertDoesNotThrow(() -> {
+            gameDAO.createGame(gameName);
+            gameDAO.createGame(gameName);
+            gameDAO.createGame(gameName);
+            gameDAO.createGame(gameName);
+            gameDAO.createGame(gameName);
+            gameDAO.createGame(gameName);
+            assertEquals(gameDAO.size(), 6);
+            gameDAO.deleteGames();
+            assertEquals(gameDAO.size(), 0);
+        });
+    }
 
 }
