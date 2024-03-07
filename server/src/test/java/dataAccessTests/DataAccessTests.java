@@ -94,7 +94,10 @@ public class DataAccessTests {
             assertEquals(userDAO.size(), 0);
         });
     }
-
+    @Test @DisplayName("Good Delete Users No Data")
+    public void goodDeleteUsersNoData() throws TestException {
+        assertDoesNotThrow(() -> userDAO.deleteUsers());
+    }
 
     @Test @DisplayName("Good Create Auth")
     public void goodCreateAuth() throws TestException {
