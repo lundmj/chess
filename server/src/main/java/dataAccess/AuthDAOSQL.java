@@ -69,7 +69,8 @@ public class AuthDAOSQL implements AuthDAO {
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-
+        var statement = "DELETE FROM auths WHERE authToken=?";
+        executeUpdate(statement, authToken);
     }
 
     @Override

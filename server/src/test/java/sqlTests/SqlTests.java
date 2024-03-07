@@ -121,12 +121,30 @@ public class SqlTests {
             authDAO.getAuth("fake-auth38921389");
         });
     }
-    @Test @DisplayName("Good Delete Auths")
+    @Test @DisplayName("Good Delete Many Auths")
     public void goodDeleteAuths() throws TestException {
+        assertDoesNotThrow(() -> {
+            assertEquals(authDAO.size(), 0);
+            authDAO.createAuth(username);
+            authDAO.createAuth("otheruser");
+            authDAO.createAuth("anotherone");
+            assertEquals(authDAO.size(), 3);
+            authDAO.deleteAuths();
+            assertEquals(authDAO.size(), 0);
+        });
 
     }
-    @Test @DisplayName("Good Delete Auth")
-    public void goodDeleteAuth() throws TestException {}
+    @Test @DisplayName("Good Delete One Auth")
+    public void goodDeleteAuth() throws TestException {
+        assertDoesNotThrow(() -> {
+            AuthData data1 = authDAO.createAuth(username);
+            AuthData data2 = authDAO.createAuth("no.2");
+            authDAO.deleteAuth(data1.authToken());
+            assertEquals(authDAO.size(), 1);
+            assertThrows(UnauthorizedException.class, () -> authDAO.getAuth(data1.authToken()));
+            assertDoesNotThrow(() -> authDAO.getAuth(data2.authToken()));
+        });
+    }
 
 
     @Test @DisplayName("Good List Games")
