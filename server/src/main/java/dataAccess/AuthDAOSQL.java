@@ -1,6 +1,8 @@
 package dataAccess;
 
+import dataAccess.Exceptions.BadRequestException;
 import dataAccess.Exceptions.DataAccessException;
+import dataAccess.Exceptions.UnauthorizedException;
 import model.AuthData;
 
 import java.sql.*;
@@ -34,19 +36,34 @@ public class AuthDAOSQL implements AuthDAO {
 
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
+        if (username == null) throw new BadRequestException();
         var statement = "INSERT INTO auths (authToken, username) VALUES (?, ?)";
-        String authToken = executeUpdate(statement, UUID.randomUUID().toString(), username);
+        String authToken = UUID.randomUUID().toString();
+        executeUpdate(statement, authToken, username);
         return new AuthData(authToken, username);
     }
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
-        return null;
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken, username FROM auths WHERE authToken=?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readAuth(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+        throw new UnauthorizedException();
     }
 
     @Override
     public void deleteAuths() throws DataAccessException {
-        var statement = "TRUNCATE users";
+        var statement = "TRUNCATE auths";
         executeUpdate(statement);
     }
 
@@ -69,8 +86,11 @@ public class AuthDAOSQL implements AuthDAO {
         } catch (Exception e) {return 0;}
         return 0;
     }
+    private AuthData readAuth(ResultSet rs) throws SQLException {
+        return new AuthData(rs.getString("authToken"), rs.getString("username"));
+    }
 
-    private String executeUpdate(String statement, Object... params) throws DataAccessException {
+    private void executeUpdate(String statement, Object... params) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
@@ -79,13 +99,6 @@ public class AuthDAOSQL implements AuthDAO {
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
-
-                var rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getString(1);
-                }
-
-                return "";
             }
         } catch (SQLException e) {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));

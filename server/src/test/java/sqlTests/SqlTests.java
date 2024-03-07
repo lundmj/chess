@@ -5,6 +5,7 @@ import dataAccess.Exceptions.AlreadyTakenException;
 import dataAccess.Exceptions.BadRequestException;
 import dataAccess.Exceptions.DataAccessException;
 import dataAccess.Exceptions.UnauthorizedException;
+import model.AuthData;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -102,13 +103,28 @@ public class SqlTests {
         });
     }
     @Test @DisplayName("Bad Create Auth")
-    public void badCreateAuth() throws TestException {}
+    public void badCreateAuth() throws TestException {
+        assertThrows(BadRequestException.class, () -> authDAO.createAuth(null));
+    }
     @Test @DisplayName("Good Get Auth")
-    public void goodGetAuth() throws TestException {}
+    public void goodGetAuth() throws TestException {
+        assertDoesNotThrow(() -> {
+            AuthData authData = authDAO.createAuth(username);
+            String returnedUsername = authDAO.getAuth(authData.authToken()).username();
+            assertEquals(returnedUsername, username);
+        });
+    }
     @Test @DisplayName("Bad Get Auth")
-    public void badGetAuth() throws TestException {}
+    public void badGetAuth() throws TestException {
+        assertThrows(UnauthorizedException.class, () -> {
+            authDAO.createAuth(username);
+            authDAO.getAuth("fake-auth38921389");
+        });
+    }
     @Test @DisplayName("Good Delete Auths")
-    public void goodDeleteAuths() throws TestException {}
+    public void goodDeleteAuths() throws TestException {
+
+    }
     @Test @DisplayName("Good Delete Auth")
     public void goodDeleteAuth() throws TestException {}
 
