@@ -147,6 +147,10 @@ public class DataAccessTests {
             assertDoesNotThrow(() -> authDAO.getAuth(data2.authToken()));
         });
     }
+    @Test @DisplayName("Bad Delete One Auth")
+    public void badDeleteAuth() throws TestException {
+        assertThrows(UnauthorizedException.class, () -> authDAO.deleteAuth("RandomAuth"));
+    }
 
     @Test @DisplayName("Good Create Game")
     public void goodCreateGame() throws TestException {
@@ -177,7 +181,8 @@ public class DataAccessTests {
     }
     @Test @DisplayName("Bad List Games")
     public void badListGames() throws TestException {
-
+        //The way mine is built never causes list games to throw an error
+        //An empty list is returned if there are no games
     }
     @Test @DisplayName("Good Join")
     public void goodJoin() throws TestException {
