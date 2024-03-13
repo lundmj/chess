@@ -6,11 +6,12 @@ import dataAccess.Exceptions.DataAccessException;
 import dataAccess.Exceptions.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class UserService {
     public static AuthData register(String username, String password, String email, UserDAO userDAO, AuthDAO authDAO) throws DataAccessException {
         verifyFieldsNotEmpty(username, password, email);
-        userDAO.createUser(username, password, email);
+        userDAO.createUser(username, new BCryptPasswordEncoder().encode(password), email);
         return authDAO.createAuth(username);
     }
     public static AuthData login(String username, String password, UserDAO userDAO, AuthDAO authDAO) throws DataAccessException {
@@ -28,6 +29,6 @@ public class UserService {
         if (username == null || password == null || email == null) throw new BadRequestException();
     }
     private static void validateUser(UserData user, String password) throws UnauthorizedException {
-        if (!user.password().equals(password)) throw new UnauthorizedException();
+        if (! new BCryptPasswordEncoder().matches(password, user.password())) throw new UnauthorizedException();
     }
 }
