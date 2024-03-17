@@ -7,8 +7,6 @@ import handlers.*;
 import responses.ErrorResponse;
 import spark.*;
 
-import javax.xml.crypto.Data;
-
 public class Server {
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
