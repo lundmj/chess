@@ -1,6 +1,6 @@
 import ui.Repl;
 
-public class Main {
+public class MainClient {
     public static void main(String[] args) {
         var url = "http://localhost:8080";
         if (args.length == 1) {
