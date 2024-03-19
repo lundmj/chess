@@ -3,6 +3,8 @@ package serverFacade;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.UserData;
+import requests.LoginRequest;
+import requests.RegisterRequest;
 import ui.ResponseException;
 
 import java.io.IOException;
@@ -18,8 +20,14 @@ public class ServerFacade {
     public ServerFacade(String url) {
         this.url = url;
     }
-    public AuthData register(UserData user) throws ResponseException {
-        return makeRequest("POST", "/user", null, user, AuthData.class);
+    public void clear() throws ResponseException {
+        makeRequest("DELETE", "/db", null, null, null);
+    }
+    public AuthData register(RegisterRequest request) throws ResponseException {
+        return makeRequest("POST", "/user", null, request, AuthData.class);
+    }
+    public AuthData login(LoginRequest request) throws ResponseException {
+        return makeRequest("POST", "/session", null, request, AuthData.class);
     }
 
     private <T> T makeRequest(String method, String path, String authToken, Object request, Class<T> responseClass) throws ResponseException {
@@ -30,11 +38,9 @@ public class ServerFacade {
             http.setDoOutput(true);
 
             writeBody(request, http);
-
             writeHeader(authToken, http);
-            print("Made it past write header");
+
             http.connect();
-            print("Connected");
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
         } catch (Exception ex) {

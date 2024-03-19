@@ -1,10 +1,7 @@
 package serviceTests;
 
 import dataAccess.*;
-import dataAccess.Exceptions.AlreadyTakenException;
-import dataAccess.Exceptions.BadRequestException;
-import dataAccess.Exceptions.DataAccessException;
-import dataAccess.Exceptions.UnauthorizedException;
+import dataAccess.Exceptions.*;
 import model.AuthData;
 import org.junit.jupiter.api.*;
 import passoffTests.testClasses.TestException;

@@ -2,6 +2,8 @@ package ui;
 
 import model.AuthData;
 import model.UserData;
+import requests.LoginRequest;
+import requests.RegisterRequest;
 import serverFacade.ServerFacade;
 
 import java.util.Arrays;
@@ -23,6 +25,8 @@ public class Client {
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (command) {
                 case "register" -> register(params);
+                case "login" -> login(params);
+                case "clearall" -> clear();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -33,16 +37,30 @@ public class Client {
 
 
     // vv COMMAND FUNCTIONS vv //
-
+    private String clear() throws ResponseException {
+        assertSignedOut();
+        server.clear();
+        return "Cleared all data from database";
+    }
     private String register(String... params) throws ResponseException {
         assertSignedOut();
         if (params.length == 3) {
-            AuthData auth = server.register(new UserData(params[0], params[1], params[2]));
+            AuthData auth = server.register(new RegisterRequest(params[0], params[1], params[2]));
             authToken = auth.authToken();
             state = State.SIGNEDIN;
-            return "Successfully registered user: " + auth.username();
+            return "Successfully registered: " + auth.username();
         }
         throw new ResponseException(400, "Expected: <username> <password> <email>");
+    }
+    private String login(String... params) throws ResponseException {
+        assertSignedOut();
+        if (params.length == 2) {
+            AuthData auth = server.login(new LoginRequest(params[0], params[1]));
+            authToken = auth.authToken();
+            state = State.SIGNEDIN;
+            return "Successfully logged in: " + auth.username();
+        }
+        throw new ResponseException(400, "Expected: <username> <password>");
     }
     private String help() {
         if (state == State.SIGNEDOUT)
