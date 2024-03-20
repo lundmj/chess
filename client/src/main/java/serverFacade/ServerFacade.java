@@ -2,11 +2,11 @@ package serverFacade;
 
 import com.google.gson.Gson;
 import model.AuthData;
-import model.UserData;
 import requests.CreateGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import responses.GameIDResponse;
+import responses.GamesListResponse;
 import ui.ResponseException;
 
 import java.io.IOException;
@@ -36,6 +36,9 @@ public class ServerFacade {
     }
     public GameIDResponse createGame(CreateGameRequest request, String authToken) throws ResponseException {
         return makeRequest("POST", "/game", authToken, request, GameIDResponse.class);
+    }
+    public GamesListResponse listGames(String authToken) throws ResponseException {
+        return makeRequest("GET", "/game", authToken, null, GamesListResponse.class);
     }
 
     private <T> T makeRequest(String method, String path, String authToken, Object request, Class<T> responseClass) throws ResponseException {

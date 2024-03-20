@@ -1,13 +1,13 @@
 package ui;
 
 import model.AuthData;
-import model.UserData;
 import requests.CreateGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
-import responses.GameIDResponse;
+import responses.GameInfo;
 import serverFacade.ServerFacade;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import static ui.EscapeSequences.*;
 
@@ -16,27 +16,26 @@ public class Client {
     private final String url;
     private final ServerFacade server;
     private String authToken = null;
+    private ArrayList<GameInfo> gamesList;
     public Client(String url) {
         this.url = url;
         this.server = new ServerFacade(url);
     }
-    public String eval(String input) {
-        try {
-            String[] tokens = input.toLowerCase().split(" ");
-            String command = (tokens.length > 0) ? tokens[0] : "help";
-            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            return switch (command) {
-                case "register" -> register(params);
-                case "login" -> login(params);
-                case "logout" -> logout();
-                case "create" -> createGame(params);
-                case "clearall" -> clear();
-                case "quit" -> quit();
-                default -> help();
-            };
-        } catch (ResponseException ex) {
-            return ex.getMessage();
-        }
+    public String eval(String input) throws ResponseException {
+        String[] tokens = input.toLowerCase().split(" ");
+        String command = (tokens.length > 0) ? tokens[0] : "help";
+        String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+        return switch (command) {
+            case "register" -> register(params);
+            case "login" -> login(params);
+            case "logout" -> logout();
+            case "create" -> createGame(params);
+            case "list" -> list();
+            case "clearall" -> clear();
+            case "quit", "exit" -> quit();
+            default -> help();
+        };
+
     }
 
 
@@ -76,12 +75,36 @@ public class Client {
     }
     private String createGame(String... params) throws ResponseException {
         assertSignedIn();
-        if (params.length == 1) {
-            String name = params[0];
+        if (params.length != 0) {
+            String name = String.join("_", params);
             server.createGame(new CreateGameRequest(name), authToken);
             return "Successfully created game: " + name;
         }
         throw new ResponseException(400, "Expected: create <game name>");
+    }
+
+    private String list() throws ResponseException {
+        assertSignedIn();
+        gamesList = server.listGames(authToken).games();
+
+        if (gamesList.isEmpty()) return "⚠ No games available\nTo create a game, use: create <game name>";
+
+        for (int i = 0; i < gamesList.size(); i++) {
+            GameInfo game = gamesList.get(i);
+            String gameName = game.gameName();
+            String white = game.whiteUsername();
+            String black = game.blackUsername();
+            System.out.print(i+1);
+            System.out.println(white(". " + gameName));
+            if (black == null && white == null) {
+                System.out.println(white("No players"));
+            } else {
+                if (white != null) System.out.println(white(white));
+                if (black != null) System.out.println(white(black));
+            }
+            System.out.println();
+        }
+        return "To join a game, use: join <game name>";
     }
 
     private String quit() throws ResponseException {
@@ -90,19 +113,20 @@ public class Client {
     }
     public String help() {
         if (state == State.SIGNEDOUT)
-            return blue("register <USERNAME> <PASSWORD> <EMAIL>") + white(" - create account\n")
-                 + blue("login <USERNAME> <PASSWORD>") + white(" - to play\n")
-                 + blue("quit\n")
-                 + blue("help") + white(" - see this menu");
+            return blue("register <username> <password> <email>") + white(" - create account\n")
+                    + blue("login <username> <password>") + white(" - to play\n")
+                    + blue("quit\n")
+                    + blue("help") + white(" - see this menu");
         else
-            return blue("create <GAME NAME>\n")
-                 + blue("list") + white(" - show available games\n")
-                 + blue("join <ID> [WHITE|BLACK]") + white(" - join game as a player\n")
-                 + blue("observe <ID>") + white(" - join game as an observer\n")
-                 + blue("logout\n")
-                 + blue("quit\n")
-                 + blue("help") + white(" - see this menu");
+            return blue("create <game name>\n")
+                    + blue("list") + white(" - show available games\n")
+                    + blue("join <id> [WHITE|BLACK]") + white(" - join game as a player\n")
+                    + blue("observe <id>") + white(" - join game as an observer\n")
+                    + blue("logout\n")
+                    + blue("quit\n")
+                    + blue("help") + white(" - see this menu");
     }
+
 
     private String blue(String string) {
         return SET_TEXT_COLOR_BLUE + string;

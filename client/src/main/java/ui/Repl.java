@@ -9,19 +9,31 @@ public class Repl {
     public Repl(String url) {
         this.client = new Client(url);
     }
+    @SuppressWarnings("BusyWait")
     public void run() {
         System.out.println(BLACK_KNIGHT + "Welcome to Chess240!\nType help for more information.");
         Scanner scanner = new Scanner(System.in);
-        String result = "";
-        while (!result.equals("quit")) {
+        String result;
+        while (true) {
             promptUserInput();
             String line = scanner.nextLine();
             try {
                 result = client.eval(line);
-                System.out.print(SET_TEXT_COLOR_BLUE + result);
+                if (result.equals("quit")) {
+                    System.out.print(SET_TEXT_COLOR_YELLOW + "  quitting");
+                    Thread.sleep(300);
+                    System.out.print(".");
+                    Thread.sleep(300);
+                    System.out.print(".");
+                    Thread.sleep(300);
+                    System.out.print(".");
+                    Thread.sleep(300);
+                    break;
+                }
+                System.out.println(SET_TEXT_COLOR_BLUE + "  " + result);
             } catch (Throwable e) {
-                var msg = e.toString();
-                System.out.print(msg);
+                var msg = e.getMessage();
+                System.out.println(SET_TEXT_COLOR_RED + "  " + msg);
             }
         }
         System.out.println();
@@ -29,6 +41,6 @@ public class Repl {
 
 
     private void promptUserInput() {
-        System.out.print(SET_TEXT_COLOR_WHITE + "\n>>> " + SET_TEXT_COLOR_GREEN);
+        System.out.print(SET_TEXT_COLOR_WHITE + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 }
