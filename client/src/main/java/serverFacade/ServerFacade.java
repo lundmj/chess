@@ -3,8 +3,10 @@ package serverFacade;
 import com.google.gson.Gson;
 import model.AuthData;
 import model.UserData;
+import requests.CreateGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
+import responses.GameIDResponse;
 import ui.ResponseException;
 
 import java.io.IOException;
@@ -29,6 +31,12 @@ public class ServerFacade {
     public AuthData login(LoginRequest request) throws ResponseException {
         return makeRequest("POST", "/session", null, request, AuthData.class);
     }
+    public void logout(String authToken) throws ResponseException {
+        makeRequest("DELETE", "/session", authToken, null, null);
+    }
+    public GameIDResponse createGame(CreateGameRequest request, String authToken) throws ResponseException {
+        return makeRequest("POST", "/game", authToken, request, GameIDResponse.class);
+    }
 
     private <T> T makeRequest(String method, String path, String authToken, Object request, Class<T> responseClass) throws ResponseException {
         try {
@@ -37,8 +45,8 @@ public class ServerFacade {
             http.setRequestMethod(method);
             http.setDoOutput(true);
 
-            writeBody(request, http);
             writeHeader(authToken, http);
+            writeBody(request, http);
 
             http.connect();
             throwIfNotSuccessful(http);

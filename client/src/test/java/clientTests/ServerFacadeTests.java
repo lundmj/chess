@@ -19,6 +19,11 @@ public class ServerFacadeTests {
         System.out.println("Started test HTTP server on " + port);
     }
 
+    @BeforeEach
+    public void clear() {
+        assertDoesNotThrow(() -> client.eval("clearall"));
+    }
+
     @AfterAll
     static void stopServer() {
         server.stop();

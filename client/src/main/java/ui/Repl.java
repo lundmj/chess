@@ -10,8 +10,7 @@ public class Repl {
         this.client = new Client(url);
     }
     public void run() {
-        System.out.println(BLACK_KNIGHT + "Welcome to Chess240!");
-        System.out.print("<<help placeholder>>");
+        System.out.println(BLACK_KNIGHT + "Welcome to Chess240!\nType help for more information.");
         Scanner scanner = new Scanner(System.in);
         String result = "";
         while (!result.equals("quit")) {
@@ -30,6 +29,6 @@ public class Repl {
 
 
     private void promptUserInput() {
-        System.out.print(SET_TEXT_COLOR_WHITE + "\n>>> " + RESET_TEXT_BOLD_FAINT + SET_TEXT_COLOR_GREEN);
+        System.out.print(SET_TEXT_COLOR_WHITE + "\n>>> " + SET_TEXT_COLOR_GREEN);
     }
 }
