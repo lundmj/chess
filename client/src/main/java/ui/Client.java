@@ -57,7 +57,7 @@ public class Client {
 
     // vv COMMAND FUNCTIONS vv //
     private String clear() throws ResponseException {
-        assertSignedOut();
+        if (state == State.SIGNEDIN) logout();
         server.clear();
         return "Cleared all data from database";
     }
@@ -184,13 +184,13 @@ public class Client {
         return SET_TEXT_COLOR_WHITE + string;
     }
     private void assertSignedIn() throws ResponseException {
-        if (state == State.SIGNEDOUT) {
+        if (state != State.SIGNEDIN) {
             throw new ResponseException(400, "You must sign in");
         }
     }
 
     private void assertSignedOut() throws ResponseException {
-        if (state == State.SIGNEDIN) {
+        if (state != State.SIGNEDOUT) {
             throw new ResponseException(400, "You must be signed out");
         }
     }
