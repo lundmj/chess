@@ -13,7 +13,7 @@ import java.util.Arrays;
 import static ui.EscapeSequences.*;
 
 public class Client {
-    private class Prompts {
+    private static class Prompts {
         String quit = "quit";
         String help = "help";
         String register = "register <username> <password> <email>";
@@ -46,6 +46,7 @@ public class Client {
             case "create" -> createGame(params);
             case "list" -> list();
             case "join" -> join(params);
+            case "observe" -> observe(params);
             case "clearall" -> clear();
             case "quit", "exit" -> quit();
             default -> help();
@@ -128,7 +129,6 @@ public class Client {
         }
         return String.format("To join a game, use: %s\n  To observe a game, use: %s", prompts.join, prompts.observe);
     }
-
     private String join(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 2) {
@@ -138,6 +138,16 @@ public class Client {
             return "Successfully joined team: " + params[1].toUpperCase();
         }
         throw new ResponseException(400, "Expected: " + prompts.join);
+    }
+    private String observe(String... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length == 1) {
+            server.joinGame(new JoinRequest(null, getRealID(params[0])), authToken);
+            print_board_black_perspective();
+            print_board_white_perspective();
+            return "Successfully observing game";
+        }
+        throw new ResponseException(400, "Expected: " + prompts.observe);
     }
 
     private String quit() throws ResponseException {
