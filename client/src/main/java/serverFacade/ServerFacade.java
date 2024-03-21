@@ -3,6 +3,7 @@ package serverFacade;
 import com.google.gson.Gson;
 import model.AuthData;
 import requests.CreateGameRequest;
+import requests.JoinRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import responses.GameIDResponse;
@@ -40,6 +41,9 @@ public class ServerFacade {
     public GamesListResponse listGames(String authToken) throws ResponseException {
         return makeRequest("GET", "/game", authToken, null, GamesListResponse.class);
     }
+    public void joinGame(JoinRequest request, String authToken) throws ResponseException {
+        makeRequest("PUT", "/game", authToken, request, null);
+    }
 
     private <T> T makeRequest(String method, String path, String authToken, Object request, Class<T> responseClass) throws ResponseException {
         try {
@@ -72,16 +76,15 @@ public class ServerFacade {
         }
     }
     private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        T response = null;
         if (http.getContentLength() < 0) {
             try (InputStream respBody = http.getInputStream()) {
                 InputStreamReader reader = new InputStreamReader(respBody);
                 if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);
+                    return new Gson().fromJson(reader, responseClass);
                 }
             }
         }
-        return response;
+        return null;
     }
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();

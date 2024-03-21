@@ -11,7 +11,7 @@ public class Repl {
     }
     @SuppressWarnings("BusyWait")
     public void run() {
-        System.out.println(BLACK_KNIGHT + "Welcome to Chess240!\nType help for more information.");
+        System.out.println(WHITE_KNIGHT + "Welcome to Chess240!\nType help for more information.");
         Scanner scanner = new Scanner(System.in);
         String result;
         while (true) {
@@ -41,6 +41,6 @@ public class Repl {
 
 
     private void promptUserInput() {
-        System.out.print(SET_TEXT_COLOR_WHITE + ">>> " + SET_TEXT_COLOR_GREEN);
+        System.out.print(SET_BG_COLOR_DARK_GREY + SET_TEXT_COLOR_WHITE + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 }

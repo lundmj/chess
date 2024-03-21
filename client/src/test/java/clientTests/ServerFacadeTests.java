@@ -3,6 +3,8 @@ package clientTests;
 import org.junit.jupiter.api.*;
 import server.Server;
 import ui.Client;
+import ui.ResponseException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -34,12 +36,15 @@ public class ServerFacadeTests {
     public void goodRegister() {
         assertDoesNotThrow(() -> {
             String result = client.eval("register m m m");
-            assertEquals(result, "Successfully registered user: m");
+            assertEquals(result, "Successfully registered: m");
         });
     }
     @Test @DisplayName("Bad Register")
     public void badRegister() {
-        Assertions.assertTrue(true);
+        assertThrows(ResponseException.class, () -> {
+            client.eval("register m m m");
+            client.eval("register m m m");
+        });
     }
 //    @Test @DisplayName("")
 //    public void sampleTest() {
