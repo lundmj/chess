@@ -38,7 +38,6 @@ public class WebSocketFacade extends Endpoint {
                         case NOTIFICATION -> notificationHandler.notify(new Gson().fromJson(message, Notification.class));
                         case ERROR -> notificationHandler.displayError(new Gson().fromJson(message, Error.class));
                     }
-
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -49,14 +48,10 @@ public class WebSocketFacade extends Endpoint {
     public void joinPlayer(String authToken, int gameID, ChessGame.TeamColor color) throws ResponseException {
         try {
             var command = new JoinPlayer(authToken, gameID, color);
-            this.session.getBasicRemote().sendText(wrapJoinPlayerCommand(command));
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }
-    }
-
-    private String wrapJoinPlayerCommand(JoinPlayer command) {
-        return "jp" + new Gson().toJson(command);
     }
 
     @Override

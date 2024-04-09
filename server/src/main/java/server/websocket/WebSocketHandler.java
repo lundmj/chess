@@ -34,10 +34,9 @@ public class WebSocketHandler {
     private final GameDAO gameDAO;
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, DataAccessException {
-        String metadata = message.substring(0,2);
-        String data = message.substring(2);
-        switch (metadata) {
-            case "jp" -> joinPlayer(session, new Gson().fromJson(data, JoinPlayer.class));
+        UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
+        switch (command.getCommandType()) {
+            case JOIN_PLAYER -> joinPlayer(session, new Gson().fromJson(message, JoinPlayer.class));
             default -> throw new IOException("Invalid metadata on User Game Command");
         }
     }
