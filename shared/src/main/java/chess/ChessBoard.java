@@ -3,6 +3,8 @@ package chess;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import static chess.EscapeSequences.*;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -79,8 +81,8 @@ public class ChessBoard {
         board[0][0] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
         board[0][1] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
         board[0][2] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP);
-        board[0][3] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN);
-        board[0][4] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING);
+        board[0][3] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING);
+        board[0][4] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN);
         board[0][5] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP);
         board[0][6] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
         board[0][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
@@ -91,8 +93,8 @@ public class ChessBoard {
         board[7][0] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
         board[7][1] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
         board[7][2] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
-        board[7][3] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
-        board[7][4] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
+        board[7][3] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
+        board[7][4] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
         board[7][5] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
         board[7][6] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
         board[7][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
@@ -113,6 +115,38 @@ public class ChessBoard {
             output.append("|\n");
         }
         return output.toString();
+    }
+    public String getWhitePerspective() {
+        ChessPiece[][] inverted = this.invert();
+        return getString(inverted);
+    }
+    public String getBlackPerspective() {
+        return getString(board);
+    }
+    private String getString(ChessPiece[][] myBoard) {
+        StringBuilder output = new StringBuilder();
+        for (int i = 0; i < myBoard.length; i++) {
+            for (int j = 0; j < myBoard[i].length; j++) {
+                output.append((j % 2 == i % 2) ? SET_BG_COLOR + "1m" : SET_BG_COLOR_LIGHT_GREY);
+                ChessPiece piece = myBoard[i][j];
+                if (piece != null) output.append(piece);
+                else output.append(EMPTY);
+                output.append(RESET_BG_COLOR);
+            }
+            output.append('\n');
+        }
+        return output.toString();
+    }
+
+
+    private ChessPiece[][] invert() {
+        ChessPiece[][] inverted = new ChessPiece[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                inverted[i][j] = board[7-i][7-j];
+            }
+        }
+        return inverted;
     }
     @Override
     public boolean equals(Object o) {

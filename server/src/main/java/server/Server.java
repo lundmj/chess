@@ -5,12 +5,14 @@ import dataAccess.*;
 import dataAccess.Exceptions.*;
 import handlers.*;
 import responses.ErrorResponse;
+import server.websocket.WebSocketHandler;
 import spark.*;
 
 public class Server {
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
+
     public Server() {
         try {
             this.userDAO = new UserDAOSQL();
@@ -23,6 +25,8 @@ public class Server {
     public int run(int port) {
 
         Spark.port(port);
+        // Websocket
+        Spark.webSocket("/connect", new WebSocketHandler(authDAO, gameDAO));
 
         Spark.staticFiles.location("web");
 

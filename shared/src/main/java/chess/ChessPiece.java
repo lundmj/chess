@@ -7,9 +7,9 @@ import chess.moveCalculators.PawnCalculator;
 import chess.moveCalculators.QueenCalculator;
 import chess.moveCalculators.RookCalculator;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+
 
 /**
  * Represents a single chess piece
@@ -61,13 +61,16 @@ public class ChessPiece implements Cloneable {
     public String getSymbol() {
         boolean isWhite = (color == ChessGame.TeamColor.WHITE);
         return switch (type) {
-            case KING -> isWhite? "K" : "k";
-            case QUEEN -> isWhite? "Q" : "q";
-            case ROOK -> isWhite? "R" : "r";
-            case KNIGHT -> isWhite? "N" : "n";
-            case BISHOP -> isWhite? "B" : "b";
-            case PAWN -> isWhite? "P" : "p";
+            case KING -> isWhite? EscapeSequences.WHITE_KING : EscapeSequences.BLACK_KING;
+            case QUEEN -> isWhite? EscapeSequences.WHITE_QUEEN : EscapeSequences.BLACK_QUEEN;
+            case ROOK -> isWhite? EscapeSequences.WHITE_ROOK : EscapeSequences.BLACK_ROOK;
+            case KNIGHT -> isWhite? EscapeSequences.WHITE_KNIGHT : EscapeSequences.BLACK_KNIGHT;
+            case BISHOP -> isWhite? EscapeSequences.WHITE_BISHOP : EscapeSequences.BLACK_BISHOP;
+            case PAWN -> isWhite? EscapeSequences.WHITE_PAWN : EscapeSequences.BLACK_PAWN;
         };
+    }
+    public String toString() {
+        return getSymbol();
     }
 
     @Override

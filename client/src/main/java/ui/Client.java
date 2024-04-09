@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.AuthData;
 import requests.CreateGameRequest;
 import requests.JoinRequest;
@@ -7,12 +9,17 @@ import requests.LoginRequest;
 import requests.RegisterRequest;
 import responses.GameInfo;
 import serverFacade.ServerFacade;
+import ui.websocket.NotificationHandler;
+import ui.websocket.WebSocketFacade;
+import webSocketMessages.serverMessages.Error;
+import webSocketMessages.serverMessages.LoadGame;
+import webSocketMessages.serverMessages.Notification;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import static ui.EscapeSequences.*;
+import static chess.EscapeSequences.*;
 
-public class Client {
+public class Client implements NotificationHandler {
     private static class Prompts {
         String quit = "quit";
         String help = "help";
@@ -28,10 +35,14 @@ public class Client {
     private final Prompts prompts = new Prompts();
     private State state = State.SIGNEDOUT;
     private final ServerFacade server;
+    private WebSocketFacade ws;
+    private final String url;
     private String authToken = null;
     private ArrayList<GameInfo> gamesList;
+    private ChessGame.TeamColor color = null;
 
     public Client(String url) {
+        this.url = url;
         this.server = new ServerFacade(url);
     }
 
@@ -132,10 +143,12 @@ public class Client {
     private String join(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 2) {
-            server.joinGame(new JoinRequest(params[1].toUpperCase(), getRealID(params[0])), authToken);
-            print_board_black_perspective();
-            print_board_white_perspective();
-            return "Successfully joined team: " + params[1].toUpperCase();
+            String color = params[1].toUpperCase();
+            int gameID = getRealID(params[0]);
+            server.joinGame(new JoinRequest(color, gameID), authToken);
+            this.color = (color.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK);
+            new WebSocketFacade(url, this).joinPlayer(authToken, gameID, this.color);
+            return "Successfully joined team: " + color;
         }
         throw new ResponseException(400, "Expected: " + prompts.join);
     }
@@ -143,8 +156,6 @@ public class Client {
         assertSignedIn();
         if (params.length == 1) {
             server.joinGame(new JoinRequest(null, getRealID(params[0])), authToken);
-            print_board_black_perspective();
-            print_board_white_perspective();
             return "Successfully observing game";
         }
         throw new ResponseException(400, "Expected: " + prompts.observe);
@@ -158,19 +169,21 @@ public class Client {
     public String help() {
         if (state == State.SIGNEDOUT) {
             System.out.println(
-                    blue(prompts.register) + white(" - create account\n")
-                            + blue(prompts.login) + white(" - to play\n")
-                            + blue(prompts.quit + "\n")
-                            + blue(prompts.help) + white(" - see this menu"));
+                blue(prompts.register) + white(" - create account\n")
+              + blue(prompts.login) + white(" - to play\n")
+              + blue(prompts.quit + "\n")
+              + blue(prompts.help) + white(" - see this menu")
+            );
         } else {
             System.out.println(
-                    blue(prompts.create + "\n")
-                            + blue(prompts.list) + white(" - show available games\n")
-                            + blue(prompts.join) + white(" - join game as a player\n")
-                            + blue(prompts.observe) + white(" - join game as an observer\n")
-                            + blue(prompts.logout + "\n")
-                            + blue(prompts.quit + "\n")
-                            + blue(prompts.help) + white(" - see this menu"));
+                blue(prompts.create + "\n")
+              + blue(prompts.list) + white(" - show available games\n")
+              + blue(prompts.join) + white(" - join game as a player\n")
+              + blue(prompts.observe) + white(" - join game as an observer\n")
+              + blue(prompts.logout + "\n")
+              + blue(prompts.quit + "\n")
+              + blue(prompts.help) + white(" - see this menu")
+            );
         }
         return "Enter any of the above commands to continue...";
     }
@@ -204,50 +217,22 @@ public class Client {
         }
     }
 
-
-    private static void print_board_white_perspective() {
-        String[][] board = {
-                {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK},
-                {BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
-                {WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK}
-        };
-
-        printBoard(board, false);
+    public void notify(Notification message) {
+        System.out.print(fixWSResponseWithPrompt(SET_TEXT_COLOR_MAGENTA + message.getMessage()));
     }
-
-    private static void print_board_black_perspective() {
-        String[][] board = {
-                {WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK},
-                {WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-                {BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN},
-                {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK}
-        };
-
-        printBoard(board, true);
+    public void loadGame(LoadGame message) {
+        String gameJson = message.getGameJson();
+        ChessGame game = new Gson().fromJson(gameJson, ChessGame.class);
+        System.out.print(fixWSResponseWithPrompt(switch (color) {
+            case WHITE -> game.getBoard().getWhitePerspective();
+            case BLACK -> game.getBoard().getBlackPerspective();
+        }));
     }
+    public void displayError(Error message) {
 
-    private static void printBoard(String[][] board, boolean isBlackPerspective) {
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                System.out.print((j % 2 == i % 2) ? SET_BG_COLOR_LIGHT_GREY : SET_BG_COLOR + "1m");
-                System.out.print(SET_TEXT_COLOR_WHITE); // Set the text color to white
-                System.out.print(board[i][j]);
-                System.out.print(RESET_TEXT_COLOR + RESET_BG_COLOR);
-            }
-            System.out.println();
-        }
-        if (isBlackPerspective) {
-            System.out.println(SET_BG_COLOR_BLACK + "        " + RESET_BG_COLOR); // Small gap between the boards
-        }
+    }
+    private String fixWSResponseWithPrompt(String response) {
+        return "\b\b\b\b" + response + SET_BG_COLOR_DARK_GREY + SET_TEXT_COLOR_WHITE + "\n>>> " + SET_TEXT_COLOR_GREEN;
     }
 
 }

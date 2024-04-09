@@ -1,8 +1,7 @@
 package ui;
 
 import java.util.Scanner;
-
-import static ui.EscapeSequences.*;
+import static chess.EscapeSequences.*;
 
 public class Repl {
     private final Client client;
@@ -38,7 +37,6 @@ public class Repl {
         }
         System.out.println();
     }
-
 
     private void promptUserInput() {
         System.out.print(SET_BG_COLOR_DARK_GREY + SET_TEXT_COLOR_WHITE + ">>> " + SET_TEXT_COLOR_GREEN);

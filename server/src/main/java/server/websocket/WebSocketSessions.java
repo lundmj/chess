@@ -9,8 +9,10 @@ public class WebSocketSessions {
     private final Map<Integer, Map<String, Session>> sessionMap = new HashMap<>();
 
     public void addSessionToGame(int gameID, String authToken, Session session) {
-        sessionMap.get(gameID).put(authToken, session);
+        Map<String, Session> map = sessionMap.computeIfAbsent(gameID, k -> new HashMap<>());
+        map.put(authToken, session);
     }
+
     public void removeSessionFromGame(int gameID, String authToken, Session session) {
         sessionMap.get(gameID).remove(authToken, session);
     }
