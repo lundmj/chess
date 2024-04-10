@@ -30,10 +30,16 @@ public class Client implements NotificationHandler {
         String join = "join <id> [WHITE|BLACK]";
         String observe = "observe <id>";
         String logout = "logout";
+        String redraw = "redraw";
+        String leave = "leave";
+        String move = "move [a-h] [1-8]";
+        String resign = "resign";
+        String highlight = "highlight [a-h] [1-8]";
     }
 
     private final Prompts prompts = new Prompts();
     private State state = State.SIGNEDOUT;
+    private boolean playing = false;
     private final ServerFacade server;
     private WebSocketFacade ws;
     private final String url;
@@ -143,22 +149,26 @@ public class Client implements NotificationHandler {
     }
     private String join(String... params) throws ResponseException {
         assertSignedIn();
+        assertNotInGame();
         if (params.length == 2) {
             String color = params[1].toUpperCase();
             int gameID = getRealID(params[0]);
             server.joinGame(new JoinRequest(color, gameID), authToken);
             this.color = (color.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK);
             new WebSocketFacade(url, this).joinPlayer(authToken, gameID, this.color);
+            state = State.PLAYING;
             return "Successfully joined team: " + color;
         }
         throw new ResponseException(400, "Expected: " + prompts.join);
     }
     private String observe(String... params) throws ResponseException {
         assertSignedIn();
+        assertNotInGame();
         if (params.length == 1) {
             int gameID = getRealID(params[0]);
             server.joinGame(new JoinRequest(null, gameID), authToken);
             new WebSocketFacade(url, this).joinObserver(authToken, gameID);
+            state = State.OBSERVING;
             return "Successfully observing game";
         }
         throw new ResponseException(400, "Expected: " + prompts.observe);
@@ -177,7 +187,7 @@ public class Client implements NotificationHandler {
               + blue(prompts.quit + "\n")
               + blue(prompts.help) + white(" - see this menu")
             );
-        } else {
+        } else if (state == State.SIGNEDIN) {
             System.out.println(
                 blue(prompts.create + "\n")
               + blue(prompts.list) + white(" - show available games\n")
@@ -185,6 +195,22 @@ public class Client implements NotificationHandler {
               + blue(prompts.observe) + white(" - join game as an observer\n")
               + blue(prompts.logout + "\n")
               + blue(prompts.quit + "\n")
+              + blue(prompts.help) + white(" - see this menu")
+            );
+        } else if (state == State.PLAYING) {
+            System.out.println(
+                blue(prompts.redraw) + white(" - redraw the chess board\n")
+              + blue(prompts.leave) + white(" - leave the current game\n")
+              + blue(prompts.move) + white(" - select a piece to move\n")
+              + blue(prompts.resign) + white(" - elect to resign and lose this game\n")
+              + blue(prompts.highlight) + white(" - see possible moves for selected piece\n")
+              + blue(prompts.help) + white(" - see this menu")
+            );
+        } else /* OBSERVING */ {
+            System.out.println(
+                blue(prompts.redraw) + white(" - redraw the chess board\n")
+              + blue(prompts.leave) + white(" - leave the current game\n")
+              + blue(prompts.highlight) + white(" - see possible moves for selected piece\n")
               + blue(prompts.help) + white(" - see this menu")
             );
         }
@@ -200,7 +226,8 @@ public class Client implements NotificationHandler {
         return SET_TEXT_COLOR_WHITE + string;
     }
     private void assertSignedIn() throws ResponseException {
-        if (state != State.SIGNEDIN) {
+        if (state != State.SIGNEDIN && state != State.OBSERVING
+                && state != State.PLAYING) {
             throw new ResponseException(400, "You must sign in");
         }
     }
@@ -208,6 +235,21 @@ public class Client implements NotificationHandler {
     private void assertSignedOut() throws ResponseException {
         if (state != State.SIGNEDOUT) {
             throw new ResponseException(400, "You must be signed out");
+        }
+    }
+    private void assertInGame() throws ResponseException {
+        if (state != State.OBSERVING && state != State.PLAYING) {
+            throw new ResponseException(400, "You must join or observe a game");
+        }
+    }
+    private void assertNotInGame() throws ResponseException {
+        if (state == State.PLAYING || state == State.OBSERVING) {
+            throw new ResponseException(400, "You must leave the game");
+        }
+    }
+    private void assertPlaying() throws ResponseException {
+        if (state != State.PLAYING) {
+            throw new ResponseException(400, "You must join a game");
         }
     }
 
@@ -227,8 +269,7 @@ public class Client implements NotificationHandler {
     public void loadGame(LoadGame message) {
         String gameJson = message.getGameJson();
         game = new Gson().fromJson(gameJson, ChessGame.class);
-        System.out.print(fixWSResponseWithPrompt((color == ChessGame.TeamColor.BLACK) ?
-            game.getBoard().getBlackPerspective() : game.getBoard().getWhitePerspective()));
+        showBoard();
     }
     public void displayError(Error message) {
 
@@ -236,5 +277,8 @@ public class Client implements NotificationHandler {
     private String fixWSResponseWithPrompt(String response) {
         return "\b\b\b\b" + response + SET_BG_COLOR_DARK_GREY + SET_TEXT_COLOR_WHITE + "\n>>> " + SET_TEXT_COLOR_GREEN;
     }
-
+    private void showBoard() {
+        System.out.print(fixWSResponseWithPrompt((color == ChessGame.TeamColor.BLACK) ?
+                game.getBoard().getBlackPerspective() : game.getBoard().getWhitePerspective()));
+    }
 }
