@@ -40,6 +40,7 @@ public class Client implements NotificationHandler {
     private String authToken = null;
     private ArrayList<GameInfo> gamesList;
     private ChessGame.TeamColor color = null;
+    private ChessGame game = null;
 
     public Client(String url) {
         this.url = url;
@@ -219,16 +220,15 @@ public class Client implements NotificationHandler {
         }
     }
 
+    //Display Server Response Methods//
     public void notify(Notification message) {
         System.out.print(fixWSResponseWithPrompt(SET_TEXT_COLOR_MAGENTA + message.getMessage()));
     }
     public void loadGame(LoadGame message) {
         String gameJson = message.getGameJson();
-        ChessGame game = new Gson().fromJson(gameJson, ChessGame.class);
-        System.out.print(fixWSResponseWithPrompt(switch (color) {
-            case WHITE -> game.getBoard().getWhitePerspective();
-            case BLACK -> game.getBoard().getBlackPerspective();
-        }));
+        game = new Gson().fromJson(gameJson, ChessGame.class);
+        System.out.print(fixWSResponseWithPrompt((color == ChessGame.TeamColor.BLACK) ?
+            game.getBoard().getBlackPerspective() : game.getBoard().getWhitePerspective()));
     }
     public void displayError(Error message) {
 
