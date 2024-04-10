@@ -104,6 +104,7 @@ public class Client implements NotificationHandler {
 
     private String logout() throws ResponseException {
         assertSignedIn();
+        assertNotInGame();
         server.logout(authToken);
         authToken = null;
         state = State.SIGNEDOUT;
@@ -112,6 +113,7 @@ public class Client implements NotificationHandler {
 
     private String createGame(String... params) throws ResponseException {
         assertSignedIn();
+        assertNotInGame();
         if (params.length != 0) {
             String name = String.join("_", params);
             server.createGame(new CreateGameRequest(name), authToken);
@@ -122,6 +124,7 @@ public class Client implements NotificationHandler {
 
     private String list() throws ResponseException {
         assertSignedIn();
+        assertNotInGame();
         gamesList = server.listGames(authToken).games();
 
         if (gamesList.isEmpty()) {
@@ -172,6 +175,12 @@ public class Client implements NotificationHandler {
             return "Successfully observing game";
         }
         throw new ResponseException(400, "Expected: " + prompts.observe);
+    }
+
+    private String redraw() throws ResponseException {
+        assertInGame();
+        showBoard();
+        return "Refreshed";
     }
 
     private String quit() throws ResponseException {
