@@ -155,7 +155,9 @@ public class Client implements NotificationHandler {
     private String observe(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
-            server.joinGame(new JoinRequest(null, getRealID(params[0])), authToken);
+            int gameID = getRealID(params[0]);
+            server.joinGame(new JoinRequest(null, gameID), authToken);
+            new WebSocketFacade(url, this).joinObserver(authToken, gameID);
             return "Successfully observing game";
         }
         throw new ResponseException(400, "Expected: " + prompts.observe);

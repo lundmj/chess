@@ -6,7 +6,6 @@ import dataAccess.AuthDAO;
 import dataAccess.Exceptions.DataAccessException;
 import dataAccess.GameDAO;
 import model.GameData;
-import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
@@ -15,6 +14,7 @@ import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserver;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -37,13 +37,14 @@ public class WebSocketHandler {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(session, new Gson().fromJson(message, JoinPlayer.class));
+            case JOIN_OBSERVER -> joinObserver(session, new Gson().fromJson(message, JoinObserver.class));
             default -> throw new IOException("Invalid metadata on User Game Command");
         }
     }
 
     private void joinPlayer(Session session, JoinPlayer command) throws DataAccessException, IOException {
         int gameID = command.getGameID();
-        String authToken = command.getAuthString();
+        String authToken = command.getAuthToken();
         sessions.addSessionToGame(gameID, authToken, session);
         GameData game = getGame(gameID, authToken);
 
@@ -54,6 +55,15 @@ public class WebSocketHandler {
         String color = isWhite? "white" : "black";
         String notifMessage = String.format("%s joined %s team", username, color);
         broadcast(gameID, new Notification(notifMessage), authToken);
+    }
+    private void joinObserver(Session session, JoinObserver command) throws DataAccessException, IOException {
+        int gameID = command.getGameID();
+        String authToken = command.getAuthToken();
+        sessions.addSessionToGame(gameID, authToken, session);
+        GameData game = getGame(gameID, authToken);
+
+        sendMessage(gameID, new LoadGame(new Gson().toJson(game)), authToken);
+        broadcast(gameID, new Notification("A player is observing the game"), authToken);
     }
 
     private <T extends ServerMessage> void sendMessage(int gameID, T message, String authToken) throws IOException {
