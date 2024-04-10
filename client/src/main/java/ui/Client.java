@@ -182,6 +182,11 @@ public class Client implements NotificationHandler {
         showBoard();
         return "Refreshed";
     }
+    private String leave() throws ResponseException {
+        assertInGame();
+        state = State.SIGNEDIN;
+        return "Successfully left game";
+    }
 
     private String quit() throws ResponseException {
         if (state == State.SIGNEDIN) logout();
