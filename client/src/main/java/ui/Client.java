@@ -1,8 +1,9 @@
 package ui;
 
-import chess.ChessGame;
+import chess.*;
 import com.google.gson.Gson;
 import model.AuthData;
+import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinRequest;
 import requests.LoginRequest;
@@ -17,6 +18,8 @@ import webSocketMessages.serverMessages.Notification;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
+
 import static chess.EscapeSequences.*;
 
 public class Client implements NotificationHandler {
@@ -32,7 +35,7 @@ public class Client implements NotificationHandler {
         String logout = "logout";
         String redraw = "redraw";
         String leave = "leave";
-        String move = "move [a-h] [1-8]";
+        String move = "move [a-h] [1-8] [a-h] [1-8]";
         String resign = "resign";
         String highlight = "highlight [a-h] [1-8]";
     }
@@ -46,7 +49,7 @@ public class Client implements NotificationHandler {
     private String authToken = null;
     private ArrayList<GameInfo> gamesList;
     private ChessGame.TeamColor color = null;
-    private ChessGame game = null;
+    private GameData gameData = null;
 
     public Client(String url) {
         this.url = url;
@@ -65,11 +68,13 @@ public class Client implements NotificationHandler {
             case "list" -> list();
             case "join" -> join(params);
             case "observe" -> observe(params);
+            case "leave" -> leave();
+            case "redraw" -> redraw();
+            case "move" -> move(params);
             case "clearall" -> clear();
             case "quit", "exit" -> quit();
             default -> help();
         };
-
     }
 
 
@@ -187,6 +192,40 @@ public class Client implements NotificationHandler {
         state = State.SIGNEDIN;
         return "Successfully left game";
     }
+    private String move(String... params) throws ResponseException {
+        assertPlaying();
+        if (params.length >= 4) {
+            int startX = getIntFromLetter(params[0]);
+            int startY = Integer.parseInt(params[1]);
+            int endX = getIntFromLetter(params[2]);
+            int endY = Integer.parseInt(params[3]);
+            ChessPosition start = new ChessPosition(startX, startY);
+            ChessPosition end = new ChessPosition(endX, endY);
+            ChessGame game = gameData.game();
+            ChessBoard board = game.getBoard();
+            ChessPiece piece = board.getPiece(start);
+            ChessPiece.PieceType promotionPiece = null;
+            if (piece.equals(new ChessPiece(color, ChessPiece.PieceType.PAWN))
+            && (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endY == 8) || piece.getTeamColor() == ChessGame.TeamColor.BLACK && endY == 1) {
+                while (promotionPiece == null) {
+                    System.out.print("What piece would you like to promote your pawn to?\n" +
+                            "(Enter QUEEN, KNIGHT, ROOK, or BISHOP");
+                    Scanner scanner = new Scanner(System.in);
+                    promotionPiece = switch (scanner.nextLine()) {
+                        case "QUEEN" -> ChessPiece.PieceType.QUEEN;
+                        case "KNIGHT" -> ChessPiece.PieceType.KNIGHT;
+                        case "ROOK" -> ChessPiece.PieceType.ROOK;
+                        case "BISHOP" -> ChessPiece.PieceType.BISHOP;
+                        default -> null;
+                    };
+                }
+            }
+            ChessMove move = new ChessMove(start, end, promotionPiece);
+            new WebSocketFacade(url, this).makeMove(authToken, gameData.id(), move);
+            return "Move request sent...";
+        }
+        throw new ResponseException(400, "Expected: " + prompts.move);
+    }
 
     private String quit() throws ResponseException {
         if (state == State.SIGNEDIN) logout();
@@ -275,6 +314,19 @@ public class Client implements NotificationHandler {
             throw new ResponseException(400, "Expected an integer for id, to join a game, use: %s" + prompts.join);
         }
     }
+    private int getIntFromLetter(String letter) throws ResponseException {
+        return switch (letter) {
+            case "a" -> 1;
+            case "b" -> 2;
+            case "c" -> 3;
+            case "d" -> 4;
+            case "e" -> 5;
+            case "f" -> 6;
+            case "g" -> 7;
+            case "h" -> 8;
+            default -> throw new ResponseException(400, "Expected a letter a-h, lowercase");
+        };
+    }
 
     //Display Server Response Methods//
     public void notify(Notification message) {
@@ -282,7 +334,7 @@ public class Client implements NotificationHandler {
     }
     public void loadGame(LoadGame message) {
         String gameJson = message.getGameJson();
-        game = new Gson().fromJson(gameJson, ChessGame.class);
+        gameData = new Gson().fromJson(gameJson, GameData.class);
         showBoard();
     }
     public void displayError(Error message) {
@@ -293,6 +345,6 @@ public class Client implements NotificationHandler {
     }
     private void showBoard() {
         System.out.print(fixWSResponseWithPrompt((color == ChessGame.TeamColor.BLACK) ?
-                game.getBoard().getBlackPerspective() : game.getBoard().getWhitePerspective()));
+                gameData.game().getBoard().getBlackPerspective() : gameData.game().getBoard().getWhitePerspective()));
     }
 }

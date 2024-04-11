@@ -1,5 +1,8 @@
 package service;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import dataAccess.AuthDAO;
 import dataAccess.Exceptions.DataAccessException;
 import dataAccess.GameDAO;
@@ -20,5 +23,13 @@ public class GameService {
     public static void joinGame(String authToken, String playerColor, int gameID, AuthDAO authDAO, GameDAO gameDAO) throws DataAccessException {
         String username = authDAO.getAuth(authToken).username();
         gameDAO.joinGame(username, playerColor, gameID);
+    }
+    public static GameData makeMove(String authToken, int gameID, ChessMove move, GameData gameData, GameDAO gameDAO) throws DataAccessException, InvalidMoveException {
+        ChessGame game = gameData.game();
+        game.makeMove(move);
+        GameData updatedGameData = new GameData(gameID,
+                gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+        gameDAO.updateGame(gameID, updatedGameData);
+        return updatedGameData;
     }
 }

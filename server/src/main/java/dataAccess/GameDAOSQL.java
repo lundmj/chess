@@ -102,6 +102,11 @@ public class GameDAOSQL implements GameDAO {
         var statement = "TRUNCATE games";
         executeUpdate(statement);
     }
+    @Override
+    public void updateGame(int gameID, GameData game) throws DataAccessException {
+        var statement = "UPDATE games SET whiteUsername=?, blackUsername=?, gameName=?, game=? WHERE id=?";
+        executeUpdate(statement, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game(), game.id());
+    }
 
     @Override
     public int size() {

@@ -1,6 +1,8 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
 import dataAccess.Exceptions.DataAccessException;
@@ -16,6 +18,7 @@ import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinObserver;
 import webSocketMessages.userCommands.JoinPlayer;
+import webSocketMessages.userCommands.MakeMove;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
@@ -38,6 +41,7 @@ public class WebSocketHandler {
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(session, new Gson().fromJson(message, JoinPlayer.class));
             case JOIN_OBSERVER -> joinObserver(session, new Gson().fromJson(message, JoinObserver.class));
+            case MAKE_MOVE -> makeMove(new Gson().fromJson(message, MakeMove.class));
             default -> throw new IOException("Invalid metadata on User Game Command");
         }
     }
@@ -60,10 +64,26 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         String authToken = command.getAuthToken();
         sessions.addSessionToGame(gameID, authToken, session);
-        GameData game = getGame(gameID, authToken);
+        GameData gameData = getGame(gameID, authToken);
 
-        sendMessage(gameID, new LoadGame(new Gson().toJson(game)), authToken);
+        sendMessage(gameID, new LoadGame(new Gson().toJson(gameData)), authToken);
         broadcast(gameID, new Notification("A player is observing the game"), authToken);
+    }
+    private void makeMove(MakeMove command) throws DataAccessException, IOException {
+        String authToken = command.getAuthToken();
+        int gameID = command.getGameID();
+        ChessMove move = command.getMove();
+        GameData gameData = getGame(gameID, authToken);
+
+        GameData updatedGameData;
+        try {
+            updatedGameData = GameService.makeMove(authToken, gameID, move, gameData, gameDAO);
+        } catch (InvalidMoveException e) {
+            sendMessage(gameID, new Error("Error: invalid move"), authToken);
+            return;
+        }
+        broadcast(gameID, new LoadGame(new Gson().toJson(updatedGameData)), null);
+        broadcast(gameID, new Notification("A player made a move"), authToken);
     }
 
     private <T extends ServerMessage> void sendMessage(int gameID, T message, String authToken) throws IOException {

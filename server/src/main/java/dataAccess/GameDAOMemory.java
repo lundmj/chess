@@ -50,6 +50,10 @@ public class GameDAOMemory implements GameDAO {
     public void deleteGames() {
         games = new HashMap<>();
     }
+    @Override
+    public void updateGame(int gameID, GameData game) {
+        games.put(gameID, game);
+    }
 
     private int getUniqueID() {
         int id = 1;
