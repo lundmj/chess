@@ -13,9 +13,7 @@ public class WebSocketSessions {
         map.put(authToken, session);
     }
 
-//    public void removeSessionFromGame(int gameID, String authToken, Session session) {
-//        sessionMap.get(gameID).remove(authToken, session);
-//    }
+//    public void removeSessionFromGame(int gameID, String authToken, Session session) {sessionMap.get(gameID).remove(authToken, session);}
     public Map<String, Session> getSessionsForGame(int gameID) {
         return sessionMap.get(gameID);
     }
