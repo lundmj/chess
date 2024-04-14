@@ -42,9 +42,7 @@ public class Client implements NotificationHandler {
 
     private final Prompts prompts = new Prompts();
     private State state = State.SIGNEDOUT;
-    private boolean playing = false;
     private final ServerFacade server;
-    private WebSocketFacade ws;
     private final String url;
     private String authToken = null;
     private ArrayList<GameInfo> gamesList;
@@ -89,29 +87,27 @@ public class Client implements NotificationHandler {
         assertSignedOut();
         if (params.length == 3) {
             AuthData auth = server.register(new RegisterRequest(params[0], params[1], params[2]));
-            authToken = auth.authToken();
+            this.authToken = auth.authToken();
             state = State.SIGNEDIN;
             return "Successfully registered: " + auth.username();
-        }
-        throw new ResponseException(400, "Expected: " + prompts.register);
+        } else throw new ResponseException(400, "Expected: " + prompts.register);
     }
 
     private String login(String... params) throws ResponseException {
         assertSignedOut();
         if (params.length == 2) {
             AuthData auth = server.login(new LoginRequest(params[0], params[1]));
-            authToken = auth.authToken();
+            this.authToken = auth.authToken();
             state = State.SIGNEDIN;
             return "Successfully logged in: " + auth.username();
-        }
-        throw new ResponseException(400, "Expected: " + prompts.login);
+        } else throw new ResponseException(400, "Expected: " + prompts.login);
     }
 
     private String logout() throws ResponseException {
         assertSignedIn();
         assertNotInGame();
         server.logout(authToken);
-        authToken = null;
+        this.authToken = null;
         state = State.SIGNEDOUT;
         return "Logged out";
     }
@@ -123,8 +119,7 @@ public class Client implements NotificationHandler {
             String name = String.join("_", params);
             server.createGame(new CreateGameRequest(name), authToken);
             return "Successfully created game: " + name;
-        }
-        throw new ResponseException(400, "Expected: " + prompts.create);
+        } else throw new ResponseException(400, "Expected: " + prompts.create);
     }
 
     private String list() throws ResponseException {
@@ -162,12 +157,11 @@ public class Client implements NotificationHandler {
             String color = params[1].toUpperCase();
             int gameID = getRealID(params[0]);
             server.joinGame(new JoinRequest(color, gameID), authToken);
-            this.color = (color.equals("WHITE") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK);
+            this.color = (color.equals("WHITE")) ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK;
             new WebSocketFacade(url, this).joinPlayer(authToken, gameID, this.color);
             state = State.PLAYING;
             return "Successfully joined team: " + color;
-        }
-        throw new ResponseException(400, "Expected: " + prompts.join);
+        } else throw new ResponseException(400, "Expected: " + prompts.join);
     }
     private String observe(String... params) throws ResponseException {
         assertSignedIn();
@@ -178,8 +172,7 @@ public class Client implements NotificationHandler {
             new WebSocketFacade(url, this).joinObserver(authToken, gameID);
             state = State.OBSERVING;
             return "Successfully observing game";
-        }
-        throw new ResponseException(400, "Expected: " + prompts.observe);
+        } else throw new ResponseException(400, "Expected: " + prompts.observe);
     }
 
     private String redraw() throws ResponseException {
@@ -223,8 +216,7 @@ public class Client implements NotificationHandler {
             ChessMove move = new ChessMove(start, end, promotionPiece);
             new WebSocketFacade(url, this).makeMove(authToken, gameData.id(), move);
             return "Move request sent...";
-        }
-        throw new ResponseException(400, "Expected: " + prompts.move);
+        } else throw new ResponseException(400, "Expected: " + prompts.move);
     }
 
     private String quit() throws ResponseException {
@@ -347,4 +339,5 @@ public class Client implements NotificationHandler {
         System.out.print(fixWSResponseWithPrompt((color == ChessGame.TeamColor.BLACK) ?
                 gameData.game().getBoard().getBlackPerspective() : gameData.game().getBoard().getWhitePerspective()));
     }
+
 }

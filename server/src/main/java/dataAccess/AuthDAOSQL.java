@@ -39,7 +39,7 @@ public class AuthDAOSQL implements AuthDAO {
         if (username == null) throw new BadRequestException();
         var statement = "INSERT INTO auths (authToken, username) VALUES (?, ?)";
         String authToken = UUID.randomUUID().toString();
-        executeUpdate(statement, authToken, username);
+        ExecuteUpdate.execute(statement, authToken, username);
         return new AuthData(authToken, username);
     }
 
@@ -64,14 +64,14 @@ public class AuthDAOSQL implements AuthDAO {
     @Override
     public void deleteAuths() throws DataAccessException {
         var statement = "TRUNCATE auths";
-        executeUpdate(statement);
+        ExecuteUpdate.execute(statement);
     }
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         getAuth(authToken); // sneaky
         var statement = "DELETE FROM auths WHERE authToken=?";
-        executeUpdate(statement, authToken);
+        ExecuteUpdate.execute(statement, authToken);
     }
 
     @Override
@@ -90,20 +90,5 @@ public class AuthDAOSQL implements AuthDAO {
     }
     private AuthData readAuth(ResultSet rs) throws SQLException {
         return new AuthData(rs.getString("authToken"), rs.getString("username"));
-    }
-
-    private void executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
-                }
-                ps.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
     }
 }

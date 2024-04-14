@@ -61,7 +61,7 @@ public class UserDAOSQL implements UserDAO {
             getUser(username);
         } catch (UnauthorizedException e) {
             var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
-            executeUpdate(statement, username, password, email);
+            ExecuteUpdate.execute(statement, username, password, email);
             return;
         }
         throw new AlreadyTakenException();
@@ -70,7 +70,7 @@ public class UserDAOSQL implements UserDAO {
     @Override
     public void deleteUsers() throws DataAccessException {
         var statement = "TRUNCATE users";
-        executeUpdate(statement);
+        ExecuteUpdate.execute(statement);
     }
 
     @Override
@@ -93,19 +93,5 @@ public class UserDAOSQL implements UserDAO {
         var password = rs.getString("password");
         var email = rs.getString("email");
         return new UserData(username, password, email);
-    }
-    private void executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (var i = 0; i < params.length; i++) {
-                    var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
-                }
-                ps.executeUpdate();
-            }
-        } catch (SQLException e) {
-           throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
-        }
     }
 }

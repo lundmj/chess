@@ -41,7 +41,7 @@ public class WebSocketHandler {
         switch (command.getCommandType()) {
             case JOIN_PLAYER -> joinPlayer(session, new Gson().fromJson(message, JoinPlayer.class));
             case JOIN_OBSERVER -> joinObserver(session, new Gson().fromJson(message, JoinObserver.class));
-            case MAKE_MOVE -> makeMove(new Gson().fromJson(message, MakeMove.class));
+            case MAKE_MOVE -> makeMove(session, new Gson().fromJson(message, MakeMove.class));
             default -> throw new IOException("Invalid metadata on User Game Command");
         }
     }
@@ -49,13 +49,12 @@ public class WebSocketHandler {
     private void joinPlayer(Session session, JoinPlayer command) throws DataAccessException, IOException {
         int gameID = command.getGameID();
         String authToken = command.getAuthToken();
+        GameData gameData = getGame(gameID, authToken);
+        boolean isWhite = (command.getColor() == ChessGame.TeamColor.WHITE);
         sessions.addSessionToGame(gameID, authToken, session);
-        GameData game = getGame(gameID, authToken);
-
-        sendMessage(gameID, new LoadGame(new Gson().toJson(game)), authToken);
-
-        boolean isWhite = command.getColor() == ChessGame.TeamColor.WHITE;
-        String username = isWhite? game.whiteUsername() : game.blackUsername();
+        sendMessage(gameID, new LoadGame(new Gson().toJson(gameData)), session);
+        gameData = getGame(gameID, authToken);
+        String username = isWhite? gameData.whiteUsername() : gameData.blackUsername();
         String color = isWhite? "white" : "black";
         String notifMessage = String.format("%s joined %s team", username, color);
         broadcast(gameID, new Notification(notifMessage), authToken);
@@ -66,10 +65,10 @@ public class WebSocketHandler {
         sessions.addSessionToGame(gameID, authToken, session);
         GameData gameData = getGame(gameID, authToken);
 
-        sendMessage(gameID, new LoadGame(new Gson().toJson(gameData)), authToken);
+        sendMessage(gameID, new LoadGame(new Gson().toJson(gameData)), session);
         broadcast(gameID, new Notification("A player is observing the game"), authToken);
     }
-    private void makeMove(MakeMove command) throws DataAccessException, IOException {
+    private void makeMove(Session session, MakeMove command) throws DataAccessException, IOException {
         String authToken = command.getAuthToken();
         int gameID = command.getGameID();
         ChessMove move = command.getMove();
@@ -79,15 +78,14 @@ public class WebSocketHandler {
         try {
             updatedGameData = GameService.makeMove(authToken, gameID, move, gameData, gameDAO);
         } catch (InvalidMoveException e) {
-            sendMessage(gameID, new Error("Error: invalid move"), authToken);
+            sendMessage(gameID, new Error("Error: invalid move"), session);
             return;
         }
         broadcast(gameID, new LoadGame(new Gson().toJson(updatedGameData)), null);
         broadcast(gameID, new Notification("A player made a move"), authToken);
     }
 
-    private <T extends ServerMessage> void sendMessage(int gameID, T message, String authToken) throws IOException {
-        Session session = sessions.getSessionsForGame(gameID).get(authToken);
+    private <T extends ServerMessage> void sendMessage(int gameID, T message, Session session) throws IOException {
         if (session.isOpen()) {
             session.getRemote().sendString(new Gson().toJson(message));
         }
