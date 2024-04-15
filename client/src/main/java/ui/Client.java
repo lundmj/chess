@@ -69,6 +69,7 @@ public class Client implements NotificationHandler {
             case "leave" -> leave();
             case "redraw" -> redraw();
             case "move" -> move(params);
+            case "resign" -> resign();
             case "clearall" -> clear();
             case "quit", "exit" -> quit();
             default -> help();
@@ -192,23 +193,27 @@ public class Client implements NotificationHandler {
         return "Resigned";
     }
     private String move(String... params) throws ResponseException {
+
         assertPlaying();
         if (params.length >= 4) {
-            int startX = getIntFromLetter(params[0]);
-            int startY = Integer.parseInt(params[1]);
-            int endX = getIntFromLetter(params[2]);
-            int endY = Integer.parseInt(params[3]);
-            ChessPosition start = new ChessPosition(startX, startY);
-            ChessPosition end = new ChessPosition(endX, endY);
+            int startCol = getIntFromLetter(params[0]);
+            int startRow = Integer.parseInt(params[1]);
+            int endCol = getIntFromLetter(params[2]);
+            int endRow = Integer.parseInt(params[3]);
+            ChessPosition start = new ChessPosition(startRow, startCol);
+            ChessPosition end = new ChessPosition(endRow, endCol);
             ChessGame game = gameData.game();
             ChessBoard board = game.getBoard();
             ChessPiece piece = board.getPiece(start);
             ChessPiece.PieceType promotionPiece = null;
             if (piece.equals(new ChessPiece(color, ChessPiece.PieceType.PAWN))
-            && (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endY == 8) || piece.getTeamColor() == ChessGame.TeamColor.BLACK && endY == 1) {
+            && (piece.getTeamColor() == ChessGame.TeamColor.WHITE && endRow == 8)
+                    || piece.getTeamColor() == ChessGame.TeamColor.BLACK && endRow == 1) {
                 while (promotionPiece == null) {
-                    System.out.print("What piece would you like to promote your pawn to?\n" +
-                            "(Enter QUEEN, KNIGHT, ROOK, or BISHOP");
+                    System.out.print("""
+                            What piece would you like to promote your pawn to?
+                            (Enter QUEEN, KNIGHT, ROOK, or BISHOP)
+                            """);
                     Scanner scanner = new Scanner(System.in);
                     promotionPiece = switch (scanner.nextLine()) {
                         case "QUEEN" -> ChessPiece.PieceType.QUEEN;
@@ -219,8 +224,8 @@ public class Client implements NotificationHandler {
                     };
                 }
             }
-            ChessMove move = new ChessMove(start, end, promotionPiece);
-            new WebSocketFacade(url, this).makeMove(authToken, gameData.id(), move);
+            new WebSocketFacade(url, this).makeMove(
+                    authToken, gameData.id(), new ChessMove(start, end, promotionPiece));
             return "Move request sent...";
         } else throw new ResponseException(400, "Expected: " + prompts.move);
     }
