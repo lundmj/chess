@@ -19,7 +19,6 @@ import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -92,6 +91,7 @@ public class WebSocketHandler {
         GameData gameData = getGame(gameID, authToken);
         if (gameEnded(gameID)) {
             sendMessage(new Error("Error: game over"), session);
+            return;
         }
         GameData updatedGameData;
         try {
