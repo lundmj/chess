@@ -116,16 +116,16 @@ public class ChessBoard {
         }
         return output.toString();
     }
-    public String getWhitePerspective() {
+    public String getBlackPerspective() {
         ChessPiece[][] inverted = this.invert();
         return getString(inverted);
     }
-    public String getBlackPerspective() {
+    public String getWhitePerspective() {
         return getString(board);
     }
     private String getString(ChessPiece[][] myBoard) {
         StringBuilder output = new StringBuilder();
-        for (int i = 0; i < myBoard.length; i++) {
+        for (int i = myBoard.length - 1; i >= 0; i--) {
             for (int j = 0; j < myBoard[i].length; j++) {
                 output.append((j % 2 == i % 2) ? SET_BG_COLOR + "1m" : SET_BG_COLOR_LIGHT_GREY);
                 ChessPiece piece = myBoard[i][j];
@@ -137,8 +137,6 @@ public class ChessBoard {
         }
         return output.toString();
     }
-
-
     private ChessPiece[][] invert() {
         ChessPiece[][] inverted = new ChessPiece[8][8];
         for (int i = 0; i < 8; i++) {
