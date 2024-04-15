@@ -97,7 +97,4 @@ public class ServerFacade {
             };
         }
     }
-    private void print(Object item) {
-        System.out.println(item);
-    }
 }

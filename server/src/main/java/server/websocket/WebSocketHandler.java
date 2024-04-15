@@ -49,10 +49,20 @@ public class WebSocketHandler {
     private void joinPlayer(Session session, JoinPlayer command) throws DataAccessException, IOException {
         int gameID = command.getGameID();
         String authToken = command.getAuthToken();
-        GameData gameData = getGame(gameID, authToken);
+        GameData gameData;
+        try {
+            gameData = getGame(gameID, authToken);
+        } catch (DataAccessException e) {
+            sendMessage(new Error("Error: bad gameID"), session);
+            return;
+        }
         boolean isWhite = (command.getColor() == ChessGame.TeamColor.WHITE);
+        if (isWhite && gameData.whiteUsername() == null || !isWhite && gameData.blackUsername() == null) {
+            sendMessage(new Error("Error: empty team"), session);
+            return;
+        }
         sessions.addSessionToGame(gameID, authToken, session);
-        sendMessage(gameID, new LoadGame(new Gson().toJson(gameData)), session);
+        sendMessage(new LoadGame(new Gson().toJson(gameData)), session);
         gameData = getGame(gameID, authToken);
         String username = isWhite? gameData.whiteUsername() : gameData.blackUsername();
         String color = isWhite? "white" : "black";
@@ -65,7 +75,7 @@ public class WebSocketHandler {
         sessions.addSessionToGame(gameID, authToken, session);
         GameData gameData = getGame(gameID, authToken);
 
-        sendMessage(gameID, new LoadGame(new Gson().toJson(gameData)), session);
+        sendMessage(new LoadGame(new Gson().toJson(gameData)), session);
         broadcast(gameID, new Notification("A player is observing the game"), authToken);
     }
     private void makeMove(Session session, MakeMove command) throws DataAccessException, IOException {
@@ -78,14 +88,14 @@ public class WebSocketHandler {
         try {
             updatedGameData = GameService.makeMove(authToken, gameID, move, gameData, gameDAO);
         } catch (InvalidMoveException e) {
-            sendMessage(gameID, new Error("Error: invalid move"), session);
+            sendMessage(new Error("Error: invalid move"), session);
             return;
         }
         broadcast(gameID, new LoadGame(new Gson().toJson(updatedGameData)), null);
         broadcast(gameID, new Notification("A player made a move"), authToken);
     }
 
-    private <T extends ServerMessage> void sendMessage(int gameID, T message, Session session) throws IOException {
+    private <T extends ServerMessage> void sendMessage(T message, Session session) throws IOException {
         if (session.isOpen()) {
             session.getRemote().sendString(new Gson().toJson(message));
         }
