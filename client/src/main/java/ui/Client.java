@@ -183,7 +183,13 @@ public class Client implements NotificationHandler {
     private String leave() throws ResponseException {
         assertInGame();
         state = State.SIGNEDIN;
+        new WebSocketFacade(url, this).leave(authToken, gameData.id());
         return "Successfully left game";
+    }
+    private String resign() throws ResponseException {
+        assertPlaying();
+        new WebSocketFacade(url, this).resign(authToken, gameData.id());
+        return "Resigned";
     }
     private String move(String... params) throws ResponseException {
         assertPlaying();

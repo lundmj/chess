@@ -16,12 +16,10 @@ import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserver;
-import webSocketMessages.userCommands.JoinPlayer;
-import webSocketMessages.userCommands.MakeMove;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -35,6 +33,7 @@ public class WebSocketHandler {
     private final WebSocketSessions sessions = new WebSocketSessions();
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
+    private final ArrayList<Integer> endedGames = new ArrayList<>();
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException, DataAccessException {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
@@ -42,6 +41,8 @@ public class WebSocketHandler {
             case JOIN_PLAYER -> joinPlayer(session, new Gson().fromJson(message, JoinPlayer.class));
             case JOIN_OBSERVER -> joinObserver(session, new Gson().fromJson(message, JoinObserver.class));
             case MAKE_MOVE -> makeMove(session, new Gson().fromJson(message, MakeMove.class));
+            case LEAVE -> leave(session, new Gson().fromJson(message, Leave.class));
+            case RESIGN -> resign(session, new Gson().fromJson(message, Resign.class));
             default -> throw new IOException("Invalid metadata on User Game Command");
         }
     }
@@ -73,7 +74,13 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         String authToken = command.getAuthToken();
         sessions.addSessionToGame(gameID, authToken, session);
-        GameData gameData = getGame(gameID, authToken);
+        GameData gameData;
+        try {
+            gameData = getGame(gameID, authToken);
+        } catch (DataAccessException e) {
+            sendMessage(new Error("Error: bad gameID"), session);
+            return;
+        }
 
         sendMessage(new LoadGame(new Gson().toJson(gameData)), session);
         broadcast(gameID, new Notification("A player is observing the game"), authToken);
@@ -83,7 +90,9 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         ChessMove move = command.getMove();
         GameData gameData = getGame(gameID, authToken);
-
+        if (gameEnded(gameID)) {
+            sendMessage(new Error("Error: game over"), session);
+        }
         GameData updatedGameData;
         try {
             updatedGameData = GameService.makeMove(authToken, gameID, move, gameData, gameDAO);
@@ -93,6 +102,21 @@ public class WebSocketHandler {
         }
         broadcast(gameID, new LoadGame(new Gson().toJson(updatedGameData)), null);
         broadcast(gameID, new Notification("A player made a move"), authToken);
+    }
+    private void leave(Session session, Leave command) throws IOException {
+        String authToken = command.getAuthToken();
+        int gameID = command.getGameID();
+        sessions.removeSessionFromGame(gameID, authToken, session);
+        broadcast(gameID, new Notification("placeholder"), authToken);
+    }
+    private void resign(Session session, Resign command) throws IOException {
+        int gameId = command.getGameID();
+        if (gameEnded(gameId)) {
+            sendMessage(new Error("Error: game over"), session);
+            return;
+        }
+        endedGames.add(gameId);
+        broadcast(gameId, new Notification("The game has ended"), null);
     }
 
     private <T extends ServerMessage> void sendMessage(T message, Session session) throws IOException {
@@ -122,5 +146,8 @@ public class WebSocketHandler {
         if (game == null) throw new DataAccessException("Error: game not found");
 
         return game;
+    }
+    private boolean gameEnded(int gameID) {
+        return endedGames.contains(gameID);
     }
 }

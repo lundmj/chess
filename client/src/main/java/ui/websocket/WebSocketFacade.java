@@ -9,9 +9,7 @@ import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserver;
-import webSocketMessages.userCommands.JoinPlayer;
-import webSocketMessages.userCommands.MakeMove;
+import webSocketMessages.userCommands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -20,12 +18,11 @@ import java.net.URISyntaxException;
 
 public class WebSocketFacade extends Endpoint {
     private Session session;
-    private NotificationHandler notificationHandler;
+
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");
-            this.notificationHandler = notificationHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -66,6 +63,22 @@ public class WebSocketFacade extends Endpoint {
     public void makeMove(String authToken, int gameID, ChessMove move) throws ResponseException {
         try {
             var command = new MakeMove(authToken, gameID, move);
+            session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+    public void leave(String authToken, int gameID) throws ResponseException {
+        try {
+            var command = new Leave(authToken, gameID);
+            session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+    public void resign(String authToken, int gameID) throws ResponseException {
+        try {
+            var command = new Resign(authToken, gameID);
             session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
